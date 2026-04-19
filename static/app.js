@@ -375,6 +375,9 @@ async function renderHome() {
             window.currentSessionId = data.session_id;
             window.currentQuestionIndex = 0;
             window.currentDifficulty = selectedDifficulty;
+
+            // ── Digital Glitch transition ──
+            await digitalGlitchTransition();
             window.location.hash = '#quiz';
         } catch (err) {
             errorEl.textContent = err.message;
@@ -1103,6 +1106,222 @@ function route() {
 
 window.addEventListener('hashchange', route);
 document.addEventListener('DOMContentLoaded', route);
+
+// ============================================================
+// DIGITAL GLITCH TRANSITION
+// ============================================================
+
+function digitalGlitchTransition() {
+    return new Promise((resolve) => {
+        const HEX_CHARS  = '0123456789ABCDEF';
+        const C_SYMBOLS  = ['{}', '*', '&', ';', '->', '[]', '//', '++', '!=', '0x', '#', '**', '<<', '>>'];
+        const container  = document.getElementById('app');
+        const main       = document.querySelector('main') || container;
+
+        // Collect all visible text nodes to scramble
+        const textTargets = [];
+        const walker = document.createTreeWalker(main, NodeFilter.SHOW_ELEMENT);
+        let node = walker.nextNode();
+        while (node) {
+            if (['P', 'H1', 'H2', 'H3', 'SPAN', 'BUTTON', 'LABEL', 'A'].includes(node.tagName)) {
+                if (node.childNodes.length === 1 && node.childNodes[0].nodeType === Node.TEXT_NODE) {
+                    textTargets.push({ el: node, original: node.textContent });
+                }
+            }
+            node = walker.nextNode();
+        }
+
+        // Scramble function — replaces text with hex addresses + C symbols
+        function scramble(el) {
+            const len = Math.max(4, Math.min(el.original.length, 8));
+            if (Math.random() < 0.5) {
+                // Hex address style: 0xFA4B
+                let hex = '0x';
+                for (let i = 0; i < 4; i++) hex += HEX_CHARS[Math.floor(Math.random() * 16)];
+                el.el.textContent = hex;
+            } else {
+                // C symbol style
+                el.el.textContent = C_SYMBOLS[Math.floor(Math.random() * C_SYMBOLS.length)];
+            }
+        }
+
+        // ── PHASE 1: Jitter (0–100ms) ──
+        main.classList.add('glitch-jitter');
+
+        // Start scrambling immediately
+        const scrambleIntervals = textTargets.map(t => {
+            return setInterval(() => scramble(t), 40);
+        });
+
+        // ── PHASE 2: Tear + Chroma (100–400ms) ──
+        setTimeout(() => {
+            main.classList.remove('glitch-jitter');
+            main.classList.add('glitch-tear', 'glitch-chroma');
+        }, 100);
+
+        // ── PHASE 3: Cleanup + Flash + Snap (400ms) ──
+        setTimeout(() => {
+            // Stop all scramble intervals and restore text
+            scrambleIntervals.forEach(id => clearInterval(id));
+            textTargets.forEach(t => { t.el.textContent = t.original; });
+
+            // Remove glitch classes
+            main.classList.remove('glitch-tear', 'glitch-chroma', 'glitch-jitter');
+
+            // One-frame neon green flash (~16ms)
+            const flash = document.createElement('div');
+            flash.id = 'glitch-flash';
+            document.body.appendChild(flash);
+
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    flash.remove();
+                    resolve(); // snap to quiz — no fade
+                });
+            });
+        }, 400);
+    });
+}
+
+// ============================================================
+// CYBER TUNNEL TRANSITION — canvas particle system (kept for reference)
+// ============================================================
+
+function cyberTunnelTransition() {
+    return new Promise((resolve) => {
+        const DURATION = 900;   // ms total
+        const SYMBOLS  = ['{', '}', '*', '&', ';', '->', '[]', '//', '++', '!=', '0x', '#', '**', '<<'];
+
+        // 1. Fade main UI to black
+        const fadeOut = document.createElement('div');
+        fadeOut.style.cssText = `
+            position:fixed; inset:0; z-index:9998;
+            background:#000; opacity:0;
+            transition: opacity 0.18s ease;
+            pointer-events:none;
+        `;
+        document.body.appendChild(fadeOut);
+        requestAnimationFrame(() => { fadeOut.style.opacity = '1'; });
+
+        // 2. Create full-screen canvas
+        const canvas = document.createElement('canvas');
+        canvas.width  = window.innerWidth;
+        canvas.height = window.innerHeight;
+        canvas.style.cssText = `
+            position:fixed; inset:0; z-index:9999;
+            background:#000; opacity:0;
+            transition: opacity 0.18s ease;
+        `;
+        document.body.appendChild(canvas);
+        const ctx = canvas.getContext('2d');
+
+        // Show canvas after fade
+        setTimeout(() => { canvas.style.opacity = '1'; }, 180);
+
+        const cx = canvas.width  / 2;
+        const cy = canvas.height / 2;
+
+        // 3. Spawn particles
+        const particles = [];
+        const COUNT = 120;
+
+        for (let i = 0; i < COUNT; i++) {
+            const angle = Math.random() * Math.PI * 2;
+            const speed = 0.8 + Math.random() * 2.2;   // base speed
+            particles.push({
+                x: cx,
+                y: cy,
+                angle,
+                speed,
+                dist: Math.random() * 40,               // start slightly spread
+                symbol: SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)],
+                baseSize: 10 + Math.random() * 10,
+                spawnDelay: Math.random() * 200,        // stagger spawn
+                born: performance.now(),
+            });
+        }
+
+        // 4. rAF loop
+        const startTime = performance.now();
+        const maxDist = Math.sqrt(cx * cx + cy * cy) * 1.1;
+
+        function draw(now) {
+            const elapsed = now - startTime;
+            if (elapsed > DURATION) {
+                // Done — clean up and resolve
+                canvas.style.transition = 'opacity 0.15s ease';
+                canvas.style.opacity = '0';
+                fadeOut.style.opacity = '0';
+                setTimeout(() => {
+                    canvas.remove();
+                    fadeOut.remove();
+                    resolve();
+                }, 180);
+                return;
+            }
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            const progress = elapsed / DURATION;   // 0 → 1
+
+            for (const p of particles) {
+                const age = now - p.born;
+                if (age < p.spawnDelay) continue;
+
+                // Accelerate over time — tunnel zoom feel
+                const accel = 1 + progress * 6;
+                p.dist += p.speed * accel;
+
+                const x = cx + Math.cos(p.angle) * p.dist;
+                const y = cy + Math.sin(p.angle) * p.dist;
+
+                // Size grows with distance (perspective)
+                const distRatio = p.dist / maxDist;
+                const size = p.baseSize + distRatio * 48;
+
+                // Fade out as they approach the edge
+                const alpha = Math.max(0, 1 - Math.pow(distRatio, 1.4));
+
+                if (alpha <= 0 || p.dist > maxDist) continue;
+
+                // Neon green glow
+                ctx.save();
+                ctx.globalAlpha = alpha;
+                ctx.font = `bold ${size}px 'JetBrains Mono', 'Courier New', monospace`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+
+                // Outer glow
+                ctx.shadowColor   = '#03ef62';
+                ctx.shadowBlur    = 18 + distRatio * 30;
+                ctx.fillStyle     = `hsl(${140 + distRatio * 40}, 100%, ${60 + distRatio * 30}%)`;
+                ctx.fillText(p.symbol, x, y);
+
+                // Bright core
+                ctx.shadowBlur = 4;
+                ctx.fillStyle  = '#ffffff';
+                ctx.globalAlpha = alpha * 0.4;
+                ctx.fillText(p.symbol, x, y);
+
+                ctx.restore();
+            }
+
+            // Vignette — dark edges to focus center
+            const vignette = ctx.createRadialGradient(cx, cy, 0, cx, cy, maxDist);
+            vignette.addColorStop(0,   'rgba(0,0,0,0)');
+            vignette.addColorStop(0.6, 'rgba(0,0,0,0)');
+            vignette.addColorStop(1,   'rgba(0,0,0,0.85)');
+            ctx.fillStyle = vignette;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            requestAnimationFrame(draw);
+        }
+
+        setTimeout(() => requestAnimationFrame(draw), 180);
+    });
+}
 
 // ============================================================
 // EFFECTS — mouse spotlight, ripple, confetti, tilt,
