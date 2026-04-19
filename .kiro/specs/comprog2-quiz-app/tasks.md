@@ -38,7 +38,7 @@ Tasks marked `*` are optional (property-based or unit tests) and can be skipped 
     - Sub-task B: generated variants with extra whitespace, mixed case, trailing `;` — assert all evaluate as correct
     - **Validates: Requirements 4.4**
 
-- [-] 3. Implement the seed script
+- [x] 3. Implement the seed script
   - Create `seed.py` at the project root
   - Add at least 15 questions per topic per difficulty (covering all 6 topics × 3 difficulties)
   - Include `choices` rows for every Multiple Choice question (4 choices each, one marked correct)
@@ -46,8 +46,8 @@ Tasks marked `*` are optional (property-based or unit tests) and can be skipped 
   - Make the script idempotent: check for existing data before inserting
   - _Requirements: 7.1, 7.2, 7.3, 7.4, 7.5, 8.1, 8.2, 8.3_
 
-- [ ] 4. Implement the Auth service and router
-  - [ ] 4.1 Implement `register_user` in `app/services/auth_service.py`
+- [x] 4. Implement the Auth service and router
+  - [x] 4.1 Implement `register_user` in `app/services/auth_service.py`
     - Validate username length (3–32) and password length (6+); raise `HTTPException(400/422)` on failure
     - Hash password with `passlib` bcrypt; create `User` record with `xp=0`
     - Accept optional `guest_xp: int = 0`; add it to the new user's XP atomically
@@ -66,7 +66,7 @@ Tasks marked `*` are optional (property-based or unit tests) and can be skipped 
     - Assert an `HTTPException` is raised and no user record is created
     - **Validates: Requirements 1.3, 1.4, 1.5**
 
-  - [ ] 4.4 Implement `login_user` and `logout_user` in `app/services/auth_service.py`
+  - [x] 4.4 Implement `login_user` and `logout_user` in `app/services/auth_service.py`
     - `login_user`: verify password with bcrypt; create a `Session` record with `secrets.token_hex(32)`; add `guest_xp` to user XP if provided; return token
     - `logout_user`: delete the `Session` record for the given token
     - _Requirements: 2.1, 2.2, 2.3, 2.5, 5.11_
@@ -76,23 +76,23 @@ Tasks marked `*` are optional (property-based or unit tests) and can be skipped 
     - Assert login with correct credentials returns a non-empty token; token works on protected endpoint; after logout, same token returns 401; wrong credentials return error
     - **Validates: Requirements 2.2, 2.3, 2.4, 2.5**
 
-  - [ ] 4.6 Implement `get_current_user` and `get_optional_user` FastAPI dependencies in `app/dependencies.py`
+  - [x] 4.6 Implement `get_current_user` and `get_optional_user` FastAPI dependencies in `app/dependencies.py`
     - `get_current_user`: look up token in `sessions` table; raise `HTTPException(401)` if not found
     - `get_optional_user`: same lookup but return `None` instead of raising
     - _Requirements: 2.4, 2.6_
 
-  - [ ] 4.7 Create `app/routers/auth.py` with POST `/api/auth/register`, `/api/auth/login`, `/api/auth/logout`
+  - [x] 4.7 Create `app/routers/auth.py` with POST `/api/auth/register`, `/api/auth/login`, `/api/auth/logout`
     - Thin handlers: validate Pydantic request body, call service, return response
     - Register and login bodies: `username`, `password`, optional `guest_xp` (non-negative int, default 0)
     - _Requirements: 1.1, 2.1, 2.5_
 
-- [ ] 5. Checkpoint — Auth layer complete
+- [x] 5. Checkpoint — Auth layer complete
   - Run `pytest tests/test_auth.py --tb=short` and ensure all tests pass
   - Manually test register + login + logout via `curl` or a REST client
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 6. Implement the Quiz service and router
-  - [ ] 6.1 Implement `select_questions` in `app/services/quiz_service.py`
+- [x] 6. Implement the Quiz service and router
+  - [x] 6.1 Implement `select_questions` in `app/services/quiz_service.py`
     - Query `questions` filtered by topic + difficulty; raise `HTTPException(400)` if fewer than 10 found
     - Use `random.sample` to pick exactly 10; return their IDs
     - _Requirements: 3.1, 3.2, 3.3, 4.1, 7.7_
@@ -108,13 +108,13 @@ Tasks marked `*` are optional (property-based or unit tests) and can be skipped 
     - Assert every returned question has exactly the requested topic and difficulty
     - **Validates: Requirements 7.7**
 
-  - [ ] 6.4 Implement `start_session` in `app/services/quiz_service.py`
+  - [x] 6.4 Implement `start_session` in `app/services/quiz_service.py`
     - Call `select_questions`; create a `QuizSession` record with `question_ids` as JSON, `answers='[]'`, `completed=0`
     - Associate `user_id` if a registered user is present; leave `NULL` for guests
     - Return the new session ID
     - _Requirements: 3.4, 3.5, 3.6, 3.7, 4.1_
 
-  - [ ] 6.5 Implement `get_question` in `app/services/quiz_service.py`
+  - [x] 6.5 Implement `get_question` in `app/services/quiz_service.py`
     - Load the session; parse `question_ids`; fetch question n (0-indexed); raise 404 if out of range
     - For Multiple Choice: include shuffled choices
     - For Code Arrangement: include shuffled code blocks (shuffle before sending, never expose `correct_index`)
@@ -125,7 +125,7 @@ Tasks marked `*` are optional (property-based or unit tests) and can be skipped 
     - Use `st.sampled_from(["Easy","Medium","Hard"])` and assert allowed types per difficulty
     - **Validates: Requirements 3.5, 3.6, 3.7**
 
-  - [ ] 6.7 Implement `evaluate_answer` in `app/services/quiz_service.py`
+  - [x] 6.7 Implement `evaluate_answer` in `app/services/quiz_service.py`
     - Multiple Choice / True/False: direct string comparison against `correct_answer`
     - Fill-in-the-Blank: normalize both sides then compare
     - Code Arrangement: compare submitted list of block IDs against `correct_index` order from DB
@@ -139,7 +139,7 @@ Tasks marked `*` are optional (property-based or unit tests) and can be skipped 
     - For MC, T/F, Code Arrangement: submitting the stored correct answer returns `correct=True`; any other valid answer returns `correct=False`
     - **Validates: Requirements 4.3, 4.5**
 
-  - [ ] 6.9 Implement `get_summary` in `app/services/quiz_service.py`
+  - [x] 6.9 Implement `get_summary` in `app/services/quiz_service.py`
     - Parse `answers` JSON; count correct answers; compute `xp_earned` as sum of per-answer XP
     - Return `{"correct": int, "total": 10, "xp_earned": int}`
     - Always include `xp_earned` even for guest sessions (frontend uses it for localStorage)
@@ -155,19 +155,19 @@ Tasks marked `*` are optional (property-based or unit tests) and can be skipped 
     - Run a full guest session; assert no `User.xp` value changed; assert `xp_earned` is present in summary
     - **Validates: Requirements 4.9, 5.9**
 
-  - [ ] 6.12 Create `app/routers/quiz.py` with all four quiz endpoints
+  - [x] 6.12 Create `app/routers/quiz.py` with all four quiz endpoints
     - POST `/api/quiz/start` — call `start_session`; use `get_optional_user`
     - GET `/api/quiz/{session_id}/question/{n}` — call `get_question`
     - POST `/api/quiz/{session_id}/answer/{n}` — call `evaluate_answer`
     - GET `/api/quiz/{session_id}/summary` — call `get_summary`
     - _Requirements: 4.1, 4.2, 4.3, 4.8_
 
-- [ ] 7. Checkpoint — Quiz engine complete
+- [x] 7. Checkpoint — Quiz engine complete
   - Run `pytest tests/test_quiz.py tests/test_normalization.py --tb=short`
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 8. Implement the XP service and user profile router
-  - [ ] 8.1 Implement `award_xp` in `app/services/xp_service.py`
+- [x] 8. Implement the XP service and user profile router
+  - [x] 8.1 Implement `award_xp` in `app/services/xp_service.py`
     - Map difficulty → XP amount (Easy=10, Medium=20, Hard=30); add to `user.xp`; return new XP and level
     - Include `level_up: bool` in return value when level increases
     - _Requirements: 5.1, 5.2, 5.3, 5.4, 5.5, 5.6, 5.8_
@@ -182,12 +182,12 @@ Tasks marked `*` are optional (property-based or unit tests) and can be skipped 
     - Use `st.lists(st.sampled_from(["Easy","Medium","Hard"]))` — assert total XP equals sum of individual awards
     - **Validates: Requirements 5.5**
 
-  - [ ] 8.4 Create `app/routers/users.py` with GET `/api/users/me`
+  - [x] 8.4 Create `app/routers/users.py` with GET `/api/users/me`
     - Require `get_current_user`; return `{"username": ..., "xp": ..., "level": calculate_level(xp)}`
     - _Requirements: 5.6, 5.7, 9.4_
 
-- [ ] 9. Implement the Leaderboard service and router
-  - [ ] 9.1 Implement `get_leaderboard` in `app/services/leaderboard_service.py`
+- [x] 9. Implement the Leaderboard service and router
+  - [x] 9.1 Implement `get_leaderboard` in `app/services/leaderboard_service.py`
     - Query top 10 users `ORDER BY xp DESC, username ASC LIMIT 10`
     - Return list of `{"username": ..., "xp": ..., "level": calculate_level(xp)}`
     - _Requirements: 6.1, 6.2, 6.3, 6.4, 6.5_
@@ -197,11 +197,11 @@ Tasks marked `*` are optional (property-based or unit tests) and can be skipped 
     - Use `st.lists(st.builds(User, ...))` — assert at most 10 entries, XP descending, alphabetical tiebreak, all required fields present
     - **Validates: Requirements 6.1, 6.2, 6.3**
 
-  - [ ] 9.3 Create `app/routers/leaderboard.py` with GET `/api/leaderboard`
+  - [x] 9.3 Create `app/routers/leaderboard.py` with GET `/api/leaderboard`
     - No auth required; call `get_leaderboard`; return list
     - _Requirements: 6.1, 6.4_
 
-- [ ] 10. Implement guest XP transfer on register/login
+- [x] 10. Implement guest XP transfer on register/login
   - Verify `register_user` and `login_user` already handle `guest_xp` (added in tasks 4.1 and 4.4)
   - Add integration test: register with `guest_xp=50`, assert `user.xp == 50`; login with `guest_xp=30`, assert XP increases by 30
   - _Requirements: 5.11_
@@ -211,13 +211,13 @@ Tasks marked `*` are optional (property-based or unit tests) and can be skipped 
     - Use `st.integers(min_value=0)` for `guest_xp` — assert final XP equals pre-request XP plus `guest_xp` exactly
     - **Validates: Requirements 5.11**
 
-- [ ] 11. Checkpoint — Backend complete
+- [x] 11. Checkpoint — Backend complete
   - Run `pytest --tb=short` (all test files)
   - Verify `GET /api/leaderboard` returns HTTP 200 without a token
   - Verify `GET /api/users/me` without a token returns HTTP 401
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 12. Build the frontend shell and routing
+- [-] 12. Build the frontend shell and routing
   - Create `static/index.html`: shell page with a `<div id="app">` mount point, link to `style.css` and `app.js`
   - Create `static/style.css`: apply retro theme — Press Start 2P font (Google Fonts), `#00ff41` on `#0d0d0d`, scanline `::before` pseudo-element with repeating linear gradient
   - Create `static/app.js`: implement a minimal JS router that reads `window.location.hash` (or `pathname`) and renders the correct view into `#app`

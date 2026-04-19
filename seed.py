@@ -1,0 +1,1425 @@
+"""
+seed.py — Populates the CompProg 2 Quiz App database with questions.
+
+Run once after deployment:
+    python seed.py
+
+The script is idempotent: if questions already exist it exits without
+inserting duplicates.
+"""
+
+import sys
+import os
+
+# Allow imports from the app/ package
+sys.path.insert(0, os.path.dirname(__file__))
+
+from app.database import engine, SessionLocal, Base
+from app.models import Question, Choice, CodeBlock
+
+# ---------------------------------------------------------------------------
+# Ensure tables exist
+# ---------------------------------------------------------------------------
+Base.metadata.create_all(bind=engine)
+
+
+# ---------------------------------------------------------------------------
+# Question data helpers
+# ---------------------------------------------------------------------------
+
+def mc(topic, difficulty, text, choices, correct_label):
+    """Build a multiple_choice question dict."""
+    return {
+        "topic": topic,
+        "difficulty": difficulty,
+        "question_type": "multiple_choice",
+        "question_text": text,
+        "correct_answer": correct_label,
+        "choices": choices,  # list of (label, text)
+    }
+
+
+def tf(topic, difficulty, text, correct):
+    """Build a true_false question dict."""
+    return {
+        "topic": topic,
+        "difficulty": difficulty,
+        "question_type": "true_false",
+        "question_text": text,
+        "correct_answer": correct,  # "True" or "False"
+        "choices": [],
+    }
+
+
+def fb(topic, difficulty, text, correct):
+    """Build a fill_blank question dict."""
+    return {
+        "topic": topic,
+        "difficulty": difficulty,
+        "question_type": "fill_blank",
+        "question_text": text,
+        "correct_answer": correct,
+        "choices": [],
+    }
+
+
+def ca(topic, difficulty, text, blocks):
+    """Build a code_arrangement question dict.
+
+    blocks — list of code lines in correct order (index = correct_index).
+    """
+    return {
+        "topic": topic,
+        "difficulty": difficulty,
+        "question_type": "code_arrangement",
+        "question_text": text,
+        "correct_answer": "code_arrangement",
+        "choices": [],
+        "code_blocks": blocks,  # list of strings, order = correct order
+    }
+
+
+# ---------------------------------------------------------------------------
+# ARRAYS — Easy (multiple_choice + true_false only)
+# ---------------------------------------------------------------------------
+ARRAYS_EASY = [
+    mc("Arrays", "Easy",
+       "How do you declare an integer array of size 5 in C?",
+       [("A", "int arr[5];"), ("B", "array int arr(5);"), ("C", "int arr = [5];"), ("D", "declare arr[5] int;")],
+       "A"),
+    mc("Arrays", "Easy",
+       "What is the index of the first element in a C array?",
+       [("A", "1"), ("B", "-1"), ("C", "0"), ("D", "Depends on the compiler")],
+       "C"),
+    mc("Arrays", "Easy",
+       "What is the valid index range for an array declared as int arr[10]?",
+       [("A", "1 to 10"), ("B", "0 to 10"), ("C", "0 to 9"), ("D", "1 to 9")],
+       "C"),
+    mc("Arrays", "Easy",
+       "Which of the following correctly initializes an array in C?",
+       [("A", "int arr[] = {1, 2, 3};"), ("B", "int arr[] = [1, 2, 3];"), ("C", "int arr = {1, 2, 3};"), ("D", "array arr = {1, 2, 3};")],
+       "A"),
+    mc("Arrays", "Easy",
+       "What does arr[3] refer to in C?",
+       [("A", "The 3rd element"), ("B", "The 4th element"), ("C", "The 2nd element"), ("D", "The last element")],
+       "B"),
+    mc("Arrays", "Easy",
+       "What is the size (in bytes) of int arr[5] if sizeof(int) == 4?",
+       [("A", "5"), ("B", "4"), ("C", "20"), ("D", "10")],
+       "C"),
+    mc("Arrays", "Easy",
+       "Which header is needed to use printf() when printing array elements?",
+       [("A", "<stdlib.h>"), ("B", "<string.h>"), ("C", "<stdio.h>"), ("D", "<math.h>")],
+       "C"),
+    mc("Arrays", "Easy",
+       "What happens when you access arr[10] on an array declared as int arr[10]?",
+       [("A", "Returns 0"), ("B", "Compile error"), ("C", "Undefined behavior"), ("D", "Returns -1")],
+       "C"),
+    mc("Arrays", "Easy",
+       "How do you pass an array to a function in C?",
+       [("A", "By value only"), ("B", "By passing the array name (pointer)"), ("C", "By using the & operator on each element"), ("D", "Arrays cannot be passed to functions")],
+       "B"),
+    mc("Arrays", "Easy",
+       "Which loop is most commonly used to iterate over all elements of an array?",
+       [("A", "while"), ("B", "do-while"), ("C", "for"), ("D", "switch")],
+       "C"),
+    tf("Arrays", "Easy",
+       "In C, array indices start at 0.", "True"),
+    tf("Arrays", "Easy",
+       "You can change the size of a C array after it has been declared.", "False"),
+    tf("Arrays", "Easy",
+       "The name of an array in C acts as a pointer to its first element.", "True"),
+    tf("Arrays", "Easy",
+       "int arr[5] = {1, 2, 3}; initializes arr[3] and arr[4] to 0.", "True"),
+    tf("Arrays", "Easy",
+       "C performs automatic bounds checking on array accesses.", "False"),
+    tf("Arrays", "Easy",
+       "An array declared inside a function is stored on the heap by default.", "False"),
+]
+
+# ---------------------------------------------------------------------------
+# ARRAYS — Medium (multiple_choice + true_false + fill_blank)
+# ---------------------------------------------------------------------------
+ARRAYS_MEDIUM = [
+    mc("Arrays", "Medium",
+       "What does the following print? int a[] = {10,20,30}; printf(\"%d\", a[1]);",
+       [("A", "10"), ("B", "20"), ("C", "30"), ("D", "Undefined")],
+       "B"),
+    mc("Arrays", "Medium",
+       "Which function copies one array to another in C?",
+       [("A", "strcpy"), ("B", "memcpy"), ("C", "arraycopy"), ("D", "copy")],
+       "B"),
+    mc("Arrays", "Medium",
+       "What is the output? int a[3] = {0}; printf(\"%d\", a[2]);",
+       [("A", "Garbage value"), ("B", "0"), ("C", "3"), ("D", "Compile error")],
+       "B"),
+    mc("Arrays", "Medium",
+       "How do you find the number of elements in int arr[] = {1,2,3,4,5}?",
+       [("A", "sizeof(arr)"), ("B", "sizeof(arr) / sizeof(arr[0])"), ("C", "length(arr)"), ("D", "arr.length")],
+       "B"),
+    mc("Arrays", "Medium",
+       "What is the address relationship between arr and &arr[0]?",
+       [("A", "They are different addresses"), ("B", "arr == &arr[0]"), ("C", "arr > &arr[0]"), ("D", "arr < &arr[0]")],
+       "B"),
+    mc("Arrays", "Medium",
+       "What does int *p = arr; p[2] = 99; do?",
+       [("A", "Compile error"), ("B", "Sets arr[2] to 99"), ("C", "Creates a new array"), ("D", "Sets p to 99")],
+       "B"),
+    mc("Arrays", "Medium",
+       "Which of the following correctly reverses an array in-place?",
+       [("A", "for(i=0;i<n;i++) arr[i]=arr[n-i];"),
+        ("B", "for(i=0;i<n/2;i++){tmp=arr[i];arr[i]=arr[n-1-i];arr[n-1-i]=tmp;}"),
+        ("C", "arr = reverse(arr);"),
+        ("D", "memrev(arr, n);")],
+       "B"),
+    tf("Arrays", "Medium",
+       "In C, passing an array to a function allows the function to modify the original array.", "True"),
+    tf("Arrays", "Medium",
+       "int arr[5]; declares an array with elements initialized to 0 by default (local scope).", "False"),
+    tf("Arrays", "Medium",
+       "You can use == to compare two arrays element-by-element in C.", "False"),
+    tf("Arrays", "Medium",
+       "sizeof(arr)/sizeof(arr[0]) gives the number of elements in a statically declared array.", "True"),
+    tf("Arrays", "Medium",
+       "A pointer to an array element can be incremented to access the next element.", "True"),
+    fb("Arrays", "Medium",
+       "To access the last element of int arr[5], you use arr[___].", "4"),
+    fb("Arrays", "Medium",
+       "The expression sizeof(int arr[10]) / sizeof(int) evaluates to ___.", "10"),
+    fb("Arrays", "Medium",
+       "In C, the array name without brackets is equivalent to a ___ to the first element.", "pointer"),
+    fb("Arrays", "Medium",
+       "To zero-initialize all elements of int arr[100], you can write int arr[100] = {___};", "0"),
+]
+
+# ---------------------------------------------------------------------------
+# ARRAYS — Hard (multiple_choice + true_false + fill_blank + code_arrangement)
+# ---------------------------------------------------------------------------
+ARRAYS_HARD = [
+    mc("Arrays", "Hard",
+       "What is the output? int a[5]={1,2,3,4,5}; int *p=a+2; printf(\"%d\",*(p+1));",
+       [("A", "2"), ("B", "3"), ("C", "4"), ("D", "5")],
+       "C"),
+    mc("Arrays", "Hard",
+       "Which statement about VLAs (Variable Length Arrays) in C99 is TRUE?",
+       [("A", "VLAs are allocated on the heap"), ("B", "VLAs can be declared with a runtime size"), ("C", "VLAs are part of C89"), ("D", "VLAs are mandatory in C11")],
+       "B"),
+    mc("Arrays", "Hard",
+       "What does int (*p)[5] declare?",
+       [("A", "A pointer to an integer"), ("B", "An array of 5 pointers"), ("C", "A pointer to an array of 5 integers"), ("D", "A 2D array")],
+       "C"),
+    mc("Arrays", "Hard",
+       "What is the result of: int a[]={1,2,3}; printf(\"%d\", *(a+2));",
+       [("A", "1"), ("B", "2"), ("C", "3"), ("D", "Address of a[2]")],
+       "C"),
+    tf("Arrays", "Hard",
+       "In C, a[i] is exactly equivalent to *(a+i).", "True"),
+    tf("Arrays", "Hard",
+       "Pointer arithmetic on an array pointer advances by the size of the element type.", "True"),
+    tf("Arrays", "Hard",
+       "int arr[0]; is valid in standard C89.", "False"),
+    fb("Arrays", "Hard",
+       "If int a[3][4], then a[1] is a pointer to the ___ row of the 2D array.", "second"),
+    fb("Arrays", "Hard",
+       "The expression a[i][j] for a 2D array is equivalent to *(*(a+i)+j). This is ___ (True/False).", "True"),
+    ca("Arrays", "Hard",
+       "Arrange the code to find the maximum element in an array of n integers.",
+       [
+           "int max = arr[0];",
+           "for (int i = 1; i < n; i++) {",
+           "    if (arr[i] > max) {",
+           "        max = arr[i];",
+           "    }",
+           "}",
+       ]),
+    ca("Arrays", "Hard",
+       "Arrange the code to reverse an array in-place.",
+       [
+           "int left = 0, right = n - 1;",
+           "while (left < right) {",
+           "    int temp = arr[left];",
+           "    arr[left] = arr[right];",
+           "    arr[right] = temp;",
+           "    left++;",
+           "    right--;",
+           "}",
+       ]),
+    ca("Arrays", "Hard",
+       "Arrange the code to compute the sum of all elements in an array.",
+       [
+           "int sum = 0;",
+           "for (int i = 0; i < n; i++) {",
+           "    sum += arr[i];",
+           "}",
+           "printf(\"%d\\n\", sum);",
+       ]),
+    ca("Arrays", "Hard",
+       "Arrange the code to copy array src into array dst of size n.",
+       [
+           "for (int i = 0; i < n; i++) {",
+           "    dst[i] = src[i];",
+           "}",
+       ]),
+    ca("Arrays", "Hard",
+       "Arrange the code to count how many elements in arr[] equal a target value.",
+       [
+           "int count = 0;",
+           "for (int i = 0; i < n; i++) {",
+           "    if (arr[i] == target) {",
+           "        count++;",
+           "    }",
+           "}",
+           "printf(\"%d\\n\", count);",
+       ]),
+    ca("Arrays", "Hard",
+       "Arrange the code to shift all elements of an array one position to the left (losing the first element).",
+       [
+           "for (int i = 0; i < n - 1; i++) {",
+           "    arr[i] = arr[i + 1];",
+           "}",
+           "arr[n - 1] = 0;",
+       ]),
+]
+
+# ---------------------------------------------------------------------------
+# MULTIDIMENSIONAL ARRAYS — Easy
+# ---------------------------------------------------------------------------
+MULTI_EASY = [
+    mc("Multidimensional Arrays", "Easy",
+       "How do you declare a 2D integer array with 3 rows and 4 columns in C?",
+       [("A", "int arr[3,4];"), ("B", "int arr[3][4];"), ("C", "int arr(3)(4);"), ("D", "int[3][4] arr;")],
+       "B"),
+    mc("Multidimensional Arrays", "Easy",
+       "How do you access the element at row 1, column 2 of a 2D array named matrix?",
+       [("A", "matrix[2][1]"), ("B", "matrix[1,2]"), ("C", "matrix[1][2]"), ("D", "matrix(1)(2)")],
+       "C"),
+    mc("Multidimensional Arrays", "Easy",
+       "What is the total number of elements in int arr[3][4]?",
+       [("A", "7"), ("B", "3"), ("C", "4"), ("D", "12")],
+       "D"),
+    mc("Multidimensional Arrays", "Easy",
+       "Which of the following correctly initializes a 2x2 matrix?",
+       [("A", "int m[2][2] = {{1,2},{3,4}};"), ("B", "int m[2][2] = {1,2,3,4};"), ("C", "Both A and B"), ("D", "Neither A nor B")],
+       "C"),
+    mc("Multidimensional Arrays", "Easy",
+       "In a 2D array int a[R][C], how many bytes does it occupy if sizeof(int)==4?",
+       [("A", "R + C"), ("B", "R * C"), ("C", "R * C * 4"), ("D", "4")],
+       "C"),
+    mc("Multidimensional Arrays", "Easy",
+       "What does a[0] refer to in int a[3][4]?",
+       [("A", "The first element"), ("B", "A pointer to the first row"), ("C", "The number of rows"), ("D", "Undefined")],
+       "B"),
+    mc("Multidimensional Arrays", "Easy",
+       "How are 2D arrays stored in memory in C?",
+       [("A", "Column-major order"), ("B", "Row-major order"), ("C", "Randomly"), ("D", "Depends on the OS")],
+       "B"),
+    mc("Multidimensional Arrays", "Easy",
+       "Which nested loop structure correctly iterates over all elements of int a[3][4]?",
+       [("A", "for(i=0;i<4;i++) for(j=0;j<3;j++)"),
+        ("B", "for(i=0;i<3;i++) for(j=0;j<4;j++)"),
+        ("C", "for(i=1;i<=3;i++) for(j=1;j<=4;j++)"),
+        ("D", "for(i=0;i<12;i++)")],
+       "B"),
+    tf("Multidimensional Arrays", "Easy",
+       "In C, a 2D array is stored in row-major order in memory.", "True"),
+    tf("Multidimensional Arrays", "Easy",
+       "int a[2][3] and int a[3][2] have the same total number of elements.", "True"),
+    tf("Multidimensional Arrays", "Easy",
+       "You can omit the number of rows when declaring a 2D array parameter in a function.", "True"),
+    tf("Multidimensional Arrays", "Easy",
+       "int a[2][2] = {1,2,3,4}; is a valid initialization in C.", "True"),
+    tf("Multidimensional Arrays", "Easy",
+       "A 2D array in C is actually an array of arrays.", "True"),
+    tf("Multidimensional Arrays", "Easy",
+       "You can use a single index to access elements of a 2D array in C.", "False"),
+    tf("Multidimensional Arrays", "Easy",
+       "The expression a[i][j] is the same as *(a[i]+j) for a 2D array.", "True"),
+]
+
+# ---------------------------------------------------------------------------
+# MULTIDIMENSIONAL ARRAYS — Medium
+# ---------------------------------------------------------------------------
+MULTI_MEDIUM = [
+    mc("Multidimensional Arrays", "Medium",
+       "What is the output? int a[2][2]={{1,2},{3,4}}; printf(\"%d\",a[1][0]);",
+       [("A", "1"), ("B", "2"), ("C", "3"), ("D", "4")],
+       "C"),
+    mc("Multidimensional Arrays", "Medium",
+       "How do you pass a 2D array to a function in C?",
+       [("A", "void f(int a[][]);"), ("B", "void f(int a[3][4]);"), ("C", "void f(int **a);"), ("D", "void f(int a[]);")],
+       "B"),
+    mc("Multidimensional Arrays", "Medium",
+       "What is the memory offset of element a[i][j] in int a[R][C]?",
+       [("A", "i*R + j"), ("B", "i*C + j"), ("C", "j*R + i"), ("D", "i + j")],
+       "B"),
+    mc("Multidimensional Arrays", "Medium",
+       "Which expression is equivalent to a[2][3] for a 2D array?",
+       [("A", "*(a+2)+3"), ("B", "*(*(a+2)+3)"), ("C", "*a[2]+3"), ("D", "a+2*3")],
+       "B"),
+    mc("Multidimensional Arrays", "Medium",
+       "What does int (*p)[4] = a; mean when a is int a[3][4]?",
+       [("A", "p is a pointer to int"), ("B", "p is a pointer to an array of 4 ints"), ("C", "p is a 2D array"), ("D", "Compile error")],
+       "B"),
+    mc("Multidimensional Arrays", "Medium",
+       "How do you initialize all elements of a 2D array to 0?",
+       [("A", "int a[3][3] = {0};"), ("B", "int a[3][3] = {{0}};"), ("C", "Both A and B"), ("D", "memset(a, 0, sizeof(a));")],
+       "D"),
+    mc("Multidimensional Arrays", "Medium",
+       "What is the output? int a[2][3]={0}; a[0][1]=5; printf(\"%d\",a[0][1]);",
+       [("A", "0"), ("B", "5"), ("C", "Undefined"), ("D", "Compile error")],
+       "B"),
+    tf("Multidimensional Arrays", "Medium",
+       "When passing a 2D array to a function, you must specify the number of columns.", "True"),
+    tf("Multidimensional Arrays", "Medium",
+       "int a[3][4] and int a[4][3] occupy the same amount of memory.", "True"),
+    tf("Multidimensional Arrays", "Medium",
+       "a[i][j] == *(*(a+i)+j) is always true for a 2D array.", "True"),
+    tf("Multidimensional Arrays", "Medium",
+       "You can omit both dimensions when declaring a 2D array parameter.", "False"),
+    tf("Multidimensional Arrays", "Medium",
+       "A 3D array int a[2][3][4] has 24 total elements.", "True"),
+    fb("Multidimensional Arrays", "Medium",
+       "For int a[3][4], the element a[2][3] is at linear index ___ (0-based).", "11"),
+    fb("Multidimensional Arrays", "Medium",
+       "To declare a pointer to a row of 5 integers, you write: int (___)[5];", "*p"),
+    fb("Multidimensional Arrays", "Medium",
+       "The number of bytes occupied by int a[4][5] when sizeof(int)==4 is ___.", "80"),
+    fb("Multidimensional Arrays", "Medium",
+       "In C, 2D arrays are stored in ___ order in memory.", "row-major"),
+]
+
+# ---------------------------------------------------------------------------
+# MULTIDIMENSIONAL ARRAYS — Hard
+# ---------------------------------------------------------------------------
+MULTI_HARD = [
+    mc("Multidimensional Arrays", "Hard",
+       "What is the output? int a[3][3]={{1,2,3},{4,5,6},{7,8,9}}; printf(\"%d\",*(*(a+1)+2));",
+       [("A", "4"), ("B", "5"), ("C", "6"), ("D", "7")],
+       "C"),
+    mc("Multidimensional Arrays", "Hard",
+       "Which declaration correctly creates a pointer to a 2D array of 3 rows and 4 cols?",
+       [("A", "int *p[3][4];"), ("B", "int (*p)[3][4];"), ("C", "int **p;"), ("D", "int p[3][4];")],
+       "B"),
+    mc("Multidimensional Arrays", "Hard",
+       "What does sizeof(a[0]) return for int a[3][4]?",
+       [("A", "4"), ("B", "12"), ("C", "16"), ("D", "3")],
+       "C"),
+    mc("Multidimensional Arrays", "Hard",
+       "How do you dynamically allocate a 2D array of R rows and C cols in C?",
+       [("A", "int **a = malloc(R*C*sizeof(int));"),
+        ("B", "int **a = malloc(R*sizeof(int*)); for(i=0;i<R;i++) a[i]=malloc(C*sizeof(int));"),
+        ("C", "int a[R][C];"),
+        ("D", "int *a = malloc(R*C);")],
+       "B"),
+    tf("Multidimensional Arrays", "Hard",
+       "For int a[3][4], sizeof(a) == sizeof(a[0]) * 3.", "True"),
+    tf("Multidimensional Arrays", "Hard",
+       "A dynamically allocated 2D array using int** is stored contiguously in memory.", "False"),
+    tf("Multidimensional Arrays", "Hard",
+       "int a[][4] = {{1,2,3,4},{5,6,7,8}}; is a valid declaration.", "True"),
+    fb("Multidimensional Arrays", "Hard",
+       "For int a[2][3][4], the total number of elements is ___.", "24"),
+    fb("Multidimensional Arrays", "Hard",
+       "The expression *(a[i]+j) is equivalent to a[___][___] for a 2D array.", "i][j"),
+    ca("Multidimensional Arrays", "Hard",
+       "Arrange the code to transpose a 3x3 matrix in-place.",
+       [
+           "for (int i = 0; i < 3; i++) {",
+           "    for (int j = i + 1; j < 3; j++) {",
+           "        int temp = a[i][j];",
+           "        a[i][j] = a[j][i];",
+           "        a[j][i] = temp;",
+           "    }",
+           "}",
+       ]),
+    ca("Multidimensional Arrays", "Hard",
+       "Arrange the code to multiply two 2x2 matrices A and B into result C.",
+       [
+           "for (int i = 0; i < 2; i++) {",
+           "    for (int j = 0; j < 2; j++) {",
+           "        C[i][j] = 0;",
+           "        for (int k = 0; k < 2; k++) {",
+           "            C[i][j] += A[i][k] * B[k][j];",
+           "        }",
+           "    }",
+           "}",
+       ]),
+    ca("Multidimensional Arrays", "Hard",
+       "Arrange the code to print all elements of a 3x3 matrix row by row.",
+       [
+           "for (int i = 0; i < 3; i++) {",
+           "    for (int j = 0; j < 3; j++) {",
+           "        printf(\"%d \", a[i][j]);",
+           "    }",
+           "    printf(\"\\n\");",
+           "}",
+       ]),
+    ca("Multidimensional Arrays", "Hard",
+       "Arrange the code to find the sum of the main diagonal of a 4x4 matrix.",
+       [
+           "int sum = 0;",
+           "for (int i = 0; i < 4; i++) {",
+           "    sum += a[i][i];",
+           "}",
+           "printf(\"%d\\n\", sum);",
+       ]),
+    ca("Multidimensional Arrays", "Hard",
+       "Arrange the code to zero out the upper triangle of a 3x3 matrix.",
+       [
+           "for (int i = 0; i < 3; i++) {",
+           "    for (int j = i + 1; j < 3; j++) {",
+           "        a[i][j] = 0;",
+           "    }",
+           "}",
+       ]),
+    ca("Multidimensional Arrays", "Hard",
+       "Arrange the code to copy a 2D array src[3][3] into dst[3][3].",
+       [
+           "for (int i = 0; i < 3; i++) {",
+           "    for (int j = 0; j < 3; j++) {",
+           "        dst[i][j] = src[i][j];",
+           "    }",
+           "}",
+       ]),
+]
+
+# ---------------------------------------------------------------------------
+# BASIC SORTING ALGORITHMS — Easy
+# ---------------------------------------------------------------------------
+SORTING_EASY = [
+    mc("Basic Sorting Algorithms", "Easy",
+       "Which sorting algorithm repeatedly swaps adjacent elements if they are in the wrong order?",
+       [("A", "Selection Sort"), ("B", "Insertion Sort"), ("C", "Bubble Sort"), ("D", "Merge Sort")],
+       "C"),
+    mc("Basic Sorting Algorithms", "Easy",
+       "What is the best-case time complexity of Bubble Sort?",
+       [("A", "O(n^2)"), ("B", "O(n log n)"), ("C", "O(n)"), ("D", "O(1)")],
+       "C"),
+    mc("Basic Sorting Algorithms", "Easy",
+       "Which sorting algorithm finds the minimum element and places it at the beginning each pass?",
+       [("A", "Bubble Sort"), ("B", "Selection Sort"), ("C", "Insertion Sort"), ("D", "Quick Sort")],
+       "B"),
+    mc("Basic Sorting Algorithms", "Easy",
+       "What is the worst-case time complexity of Selection Sort?",
+       [("A", "O(n)"), ("B", "O(n log n)"), ("C", "O(n^2)"), ("D", "O(log n)")],
+       "C"),
+    mc("Basic Sorting Algorithms", "Easy",
+       "Insertion Sort builds the sorted array by:",
+       [("A", "Swapping adjacent elements"), ("B", "Selecting the minimum each pass"), ("C", "Inserting each element into its correct position"), ("D", "Dividing the array in half")],
+       "C"),
+    mc("Basic Sorting Algorithms", "Easy",
+       "Which sort is most efficient for nearly sorted data?",
+       [("A", "Selection Sort"), ("B", "Bubble Sort"), ("C", "Insertion Sort"), ("D", "All are equally efficient")],
+       "C"),
+    mc("Basic Sorting Algorithms", "Easy",
+       "How many passes does Bubble Sort need in the worst case for n elements?",
+       [("A", "1"), ("B", "log n"), ("C", "n"), ("D", "n-1")],
+       "D"),
+    mc("Basic Sorting Algorithms", "Easy",
+       "Which of the following is a stable sorting algorithm?",
+       [("A", "Selection Sort"), ("B", "Insertion Sort"), ("C", "Quick Sort"), ("D", "Heap Sort")],
+       "B"),
+    tf("Basic Sorting Algorithms", "Easy",
+       "Bubble Sort has O(n^2) worst-case time complexity.", "True"),
+    tf("Basic Sorting Algorithms", "Easy",
+       "Selection Sort is a stable sorting algorithm.", "False"),
+    tf("Basic Sorting Algorithms", "Easy",
+       "Insertion Sort is efficient for small or nearly sorted arrays.", "True"),
+    tf("Basic Sorting Algorithms", "Easy",
+       "Bubble Sort always makes n*(n-1)/2 comparisons regardless of input.", "False"),
+    tf("Basic Sorting Algorithms", "Easy",
+       "Selection Sort always makes exactly n*(n-1)/2 comparisons.", "True"),
+    tf("Basic Sorting Algorithms", "Easy",
+       "Insertion Sort is an in-place sorting algorithm.", "True"),
+    tf("Basic Sorting Algorithms", "Easy",
+       "Bubble Sort can be optimized to stop early if no swaps occur in a pass.", "True"),
+    tf("Basic Sorting Algorithms", "Easy",
+       "Selection Sort requires O(n) extra space.", "False"),
+]
+
+# ---------------------------------------------------------------------------
+# BASIC SORTING ALGORITHMS — Medium
+# ---------------------------------------------------------------------------
+SORTING_MEDIUM = [
+    mc("Basic Sorting Algorithms", "Medium",
+       "What is the average-case time complexity of Insertion Sort?",
+       [("A", "O(n)"), ("B", "O(n log n)"), ("C", "O(n^2)"), ("D", "O(log n)")],
+       "C"),
+    mc("Basic Sorting Algorithms", "Medium",
+       "After the first pass of Selection Sort on {5,3,1,4,2}, what is the array?",
+       [("A", "{1,3,5,4,2}"), ("B", "{1,5,3,4,2}"), ("C", "{3,5,1,4,2}"), ("D", "{1,2,3,4,5}")],
+       "B"),
+    mc("Basic Sorting Algorithms", "Medium",
+       "After the first pass of Bubble Sort on {5,3,1,4,2}, what is the array?",
+       [("A", "{3,1,4,2,5}"), ("B", "{1,3,5,4,2}"), ("C", "{5,3,1,2,4}"), ("D", "{1,2,3,4,5}")],
+       "A"),
+    mc("Basic Sorting Algorithms", "Medium",
+       "Which sorting algorithm has the best space complexity?",
+       [("A", "Merge Sort"), ("B", "Bubble Sort"), ("C", "Quick Sort"), ("D", "Radix Sort")],
+       "B"),
+    mc("Basic Sorting Algorithms", "Medium",
+       "In Insertion Sort, what is the key operation performed in each iteration?",
+       [("A", "Find the minimum"), ("B", "Swap adjacent elements"), ("C", "Shift elements right to insert the current element"), ("D", "Divide the array")],
+       "C"),
+    mc("Basic Sorting Algorithms", "Medium",
+       "How many swaps does Selection Sort perform in the worst case for n elements?",
+       [("A", "n^2"), ("B", "n-1"), ("C", "n*(n-1)/2"), ("D", "0")],
+       "B"),
+    mc("Basic Sorting Algorithms", "Medium",
+       "Which sort is best suited for sorting a linked list?",
+       [("A", "Bubble Sort"), ("B", "Selection Sort"), ("C", "Insertion Sort"), ("D", "Quick Sort")],
+       "C"),
+    tf("Basic Sorting Algorithms", "Medium",
+       "Bubble Sort with early termination has O(n) best-case complexity.", "True"),
+    tf("Basic Sorting Algorithms", "Medium",
+       "Insertion Sort is a divide-and-conquer algorithm.", "False"),
+    tf("Basic Sorting Algorithms", "Medium",
+       "Selection Sort makes fewer swaps than Bubble Sort in the worst case.", "True"),
+    tf("Basic Sorting Algorithms", "Medium",
+       "All three basic sorts (Bubble, Selection, Insertion) have O(n^2) worst-case.", "True"),
+    tf("Basic Sorting Algorithms", "Medium",
+       "Insertion Sort is stable but Selection Sort is not.", "True"),
+    fb("Basic Sorting Algorithms", "Medium",
+       "The worst-case time complexity of Bubble Sort is O(___^2).", "n"),
+    fb("Basic Sorting Algorithms", "Medium",
+       "Insertion Sort inserts each element into its correct position in the ___ portion of the array.", "sorted"),
+    fb("Basic Sorting Algorithms", "Medium",
+       "Selection Sort selects the ___ element and places it at the front each pass.", "minimum"),
+    fb("Basic Sorting Algorithms", "Medium",
+       "The number of comparisons in Selection Sort for n elements is n*(n-___)/2.", "1"),
+]
+
+# ---------------------------------------------------------------------------
+# BASIC SORTING ALGORITHMS — Hard
+# ---------------------------------------------------------------------------
+SORTING_HARD = [
+    mc("Basic Sorting Algorithms", "Hard",
+       "What is the exact number of comparisons Insertion Sort makes on a reverse-sorted array of n elements?",
+       [("A", "n-1"), ("B", "n*(n-1)/2"), ("C", "n^2"), ("D", "n*log(n)")],
+       "B"),
+    mc("Basic Sorting Algorithms", "Hard",
+       "Which optimization makes Bubble Sort adaptive?",
+       [("A", "Using a sentinel value"), ("B", "Tracking whether any swap occurred in a pass"), ("C", "Sorting from both ends"), ("D", "Using binary search for insertion")],
+       "B"),
+    mc("Basic Sorting Algorithms", "Hard",
+       "What is the output after 2 passes of Insertion Sort on {4,3,2,1}?",
+       [("A", "{1,2,3,4}"), ("B", "{2,3,4,1}"), ("C", "{2,3,4,1}"), ("D", "{3,4,2,1}")],
+       "C"),
+    mc("Basic Sorting Algorithms", "Hard",
+       "Which statement about Cocktail Shaker Sort is TRUE?",
+       [("A", "It is a variant of Selection Sort"), ("B", "It sorts in both directions alternately"), ("C", "It has O(n log n) worst case"), ("D", "It is not stable")],
+       "B"),
+    tf("Basic Sorting Algorithms", "Hard",
+       "Shell Sort is an improvement over Insertion Sort that uses a gap sequence.", "True"),
+    tf("Basic Sorting Algorithms", "Hard",
+       "Bubble Sort is always slower than Insertion Sort for all inputs.", "False"),
+    tf("Basic Sorting Algorithms", "Hard",
+       "The number of inversions in an array determines the number of swaps Bubble Sort makes.", "True"),
+    fb("Basic Sorting Algorithms", "Hard",
+       "An array is sorted in ___ order when each element is greater than or equal to the previous.", "ascending"),
+    fb("Basic Sorting Algorithms", "Hard",
+       "The number of inversions in a sorted array is ___.", "0"),
+    ca("Basic Sorting Algorithms", "Hard",
+       "Arrange the code for Bubble Sort on array arr of size n.",
+       [
+           "for (int i = 0; i < n - 1; i++) {",
+           "    for (int j = 0; j < n - i - 1; j++) {",
+           "        if (arr[j] > arr[j + 1]) {",
+           "            int temp = arr[j];",
+           "            arr[j] = arr[j + 1];",
+           "            arr[j + 1] = temp;",
+           "        }",
+           "    }",
+           "}",
+       ]),
+    ca("Basic Sorting Algorithms", "Hard",
+       "Arrange the code for Selection Sort on array arr of size n.",
+       [
+           "for (int i = 0; i < n - 1; i++) {",
+           "    int min_idx = i;",
+           "    for (int j = i + 1; j < n; j++) {",
+           "        if (arr[j] < arr[min_idx]) {",
+           "            min_idx = j;",
+           "        }",
+           "    }",
+           "    int temp = arr[min_idx];",
+           "    arr[min_idx] = arr[i];",
+           "    arr[i] = temp;",
+           "}",
+       ]),
+    ca("Basic Sorting Algorithms", "Hard",
+       "Arrange the code for Insertion Sort on array arr of size n.",
+       [
+           "for (int i = 1; i < n; i++) {",
+           "    int key = arr[i];",
+           "    int j = i - 1;",
+           "    while (j >= 0 && arr[j] > key) {",
+           "        arr[j + 1] = arr[j];",
+           "        j--;",
+           "    }",
+           "    arr[j + 1] = key;",
+           "}",
+       ]),
+    ca("Basic Sorting Algorithms", "Hard",
+       "Arrange the code for optimized Bubble Sort that stops early if no swaps occur.",
+       [
+           "int swapped;",
+           "for (int i = 0; i < n - 1; i++) {",
+           "    swapped = 0;",
+           "    for (int j = 0; j < n - i - 1; j++) {",
+           "        if (arr[j] > arr[j + 1]) {",
+           "            int temp = arr[j];",
+           "            arr[j] = arr[j + 1];",
+           "            arr[j + 1] = temp;",
+           "            swapped = 1;",
+           "        }",
+           "    }",
+           "    if (!swapped) break;",
+           "}",
+       ]),
+    ca("Basic Sorting Algorithms", "Hard",
+       "Arrange the code to count the number of swaps performed by Bubble Sort.",
+       [
+           "int swaps = 0;",
+           "for (int i = 0; i < n - 1; i++) {",
+           "    for (int j = 0; j < n - i - 1; j++) {",
+           "        if (arr[j] > arr[j + 1]) {",
+           "            int temp = arr[j];",
+           "            arr[j] = arr[j + 1];",
+           "            arr[j + 1] = temp;",
+           "            swaps++;",
+           "        }",
+           "    }",
+           "}",
+           "printf(\"%d\\n\", swaps);",
+       ]),
+    ca("Basic Sorting Algorithms", "Hard",
+       "Arrange the code to sort an array using Selection Sort and print the sorted result.",
+       [
+           "for (int i = 0; i < n - 1; i++) {",
+           "    int min_idx = i;",
+           "    for (int j = i + 1; j < n; j++)",
+           "        if (arr[j] < arr[min_idx]) min_idx = j;",
+           "    int tmp = arr[i]; arr[i] = arr[min_idx]; arr[min_idx] = tmp;",
+           "}",
+           "for (int i = 0; i < n; i++) printf(\"%d \", arr[i]);",
+       ]),
+]
+
+# ---------------------------------------------------------------------------
+# BINARY SEARCH — Easy
+# ---------------------------------------------------------------------------
+BSEARCH_EASY = [
+    mc("Binary Search", "Easy",
+       "What is the prerequisite for Binary Search to work correctly?",
+       [("A", "The array must be unsorted"), ("B", "The array must be sorted"), ("C", "The array must have an even number of elements"), ("D", "The array must contain unique elements")],
+       "B"),
+    mc("Binary Search", "Easy",
+       "What is the time complexity of Binary Search?",
+       [("A", "O(n)"), ("B", "O(n^2)"), ("C", "O(log n)"), ("D", "O(1)")],
+       "C"),
+    mc("Binary Search", "Easy",
+       "In Binary Search, which element is compared first?",
+       [("A", "First element"), ("B", "Last element"), ("C", "Middle element"), ("D", "Random element")],
+       "C"),
+    mc("Binary Search", "Easy",
+       "If the target is less than the middle element in Binary Search, what happens next?",
+       [("A", "Search the right half"), ("B", "Search the left half"), ("C", "Return -1"), ("D", "Start over")],
+       "B"),
+    mc("Binary Search", "Easy",
+       "What does Binary Search return when the target is not found?",
+       [("A", "0"), ("B", "The middle index"), ("C", "-1 (or a sentinel value)"), ("D", "The last index")],
+       "C"),
+    mc("Binary Search", "Easy",
+       "How is the middle index calculated in Binary Search?",
+       [("A", "(low + high) * 2"), ("B", "(low + high) / 2"), ("C", "(low - high) / 2"), ("D", "low * high")],
+       "B"),
+    mc("Binary Search", "Easy",
+       "What is the maximum number of comparisons for Binary Search on 16 elements?",
+       [("A", "16"), ("B", "8"), ("C", "4"), ("D", "5")],
+       "D"),
+    mc("Binary Search", "Easy",
+       "Binary Search is an example of which algorithm design paradigm?",
+       [("A", "Greedy"), ("B", "Dynamic Programming"), ("C", "Divide and Conquer"), ("D", "Backtracking")],
+       "C"),
+    tf("Binary Search", "Easy",
+       "Binary Search requires the array to be sorted.", "True"),
+    tf("Binary Search", "Easy",
+       "Binary Search has O(n) time complexity.", "False"),
+    tf("Binary Search", "Easy",
+       "Binary Search can be implemented both iteratively and recursively.", "True"),
+    tf("Binary Search", "Easy",
+       "Binary Search always finds the element in the first comparison.", "False"),
+    tf("Binary Search", "Easy",
+       "Binary Search is more efficient than Linear Search for large sorted arrays.", "True"),
+    tf("Binary Search", "Easy",
+       "Binary Search works on unsorted arrays.", "False"),
+    tf("Binary Search", "Easy",
+       "The space complexity of iterative Binary Search is O(1).", "True"),
+    tf("Binary Search", "Easy",
+       "Binary Search divides the search space in half with each comparison.", "True"),
+]
+
+# ---------------------------------------------------------------------------
+# BINARY SEARCH — Medium
+# ---------------------------------------------------------------------------
+BSEARCH_MEDIUM = [
+    mc("Binary Search", "Medium",
+       "What is the space complexity of recursive Binary Search?",
+       [("A", "O(1)"), ("B", "O(log n)"), ("C", "O(n)"), ("D", "O(n log n)")],
+       "B"),
+    mc("Binary Search", "Medium",
+       "Binary Search on a sorted array of 1000 elements requires at most how many comparisons?",
+       [("A", "1000"), ("B", "500"), ("C", "10"), ("D", "100")],
+       "C"),
+    mc("Binary Search", "Medium",
+       "Which of the following is a potential integer overflow issue in Binary Search?",
+       [("A", "mid = low + high"), ("B", "mid = (low + high) / 2"), ("C", "mid = low + (high - low) / 2"), ("D", "mid = high - low")],
+       "B"),
+    mc("Binary Search", "Medium",
+       "What is the safe way to compute mid to avoid overflow?",
+       [("A", "mid = (low + high) / 2"), ("B", "mid = low + (high - low) / 2"), ("C", "mid = (low * high) / 2"), ("D", "mid = high / 2")],
+       "B"),
+    mc("Binary Search", "Medium",
+       "In a recursive Binary Search, what is the base case?",
+       [("A", "low == high"), ("B", "low > high"), ("C", "mid == target"), ("D", "Both B and C")],
+       "D"),
+    mc("Binary Search", "Medium",
+       "What does Binary Search return if there are duplicate elements and the target exists?",
+       [("A", "Always the first occurrence"), ("B", "Always the last occurrence"), ("C", "Any one of the matching indices"), ("D", "All matching indices")],
+       "C"),
+    mc("Binary Search", "Medium",
+       "Which modification to Binary Search finds the first occurrence of a target?",
+       [("A", "Return immediately when found"), ("B", "Continue searching left half even when found"), ("C", "Continue searching right half when found"), ("D", "Use linear search after finding")],
+       "B"),
+    tf("Binary Search", "Medium",
+       "Recursive Binary Search uses O(log n) stack space.", "True"),
+    tf("Binary Search", "Medium",
+       "mid = (low + high) / 2 can cause integer overflow for large arrays.", "True"),
+    tf("Binary Search", "Medium",
+       "Binary Search can find the insertion point for a missing element.", "True"),
+    tf("Binary Search", "Medium",
+       "Binary Search always returns the first occurrence of a duplicate element.", "False"),
+    tf("Binary Search", "Medium",
+       "Iterative Binary Search is generally preferred over recursive for large arrays due to stack usage.", "True"),
+    fb("Binary Search", "Medium",
+       "Binary Search has a time complexity of O(___).", "log n"),
+    fb("Binary Search", "Medium",
+       "The safe formula to compute mid without overflow is: mid = low + (high - low) / ___.", "2"),
+    fb("Binary Search", "Medium",
+       "Binary Search requires the input array to be ___ before searching.", "sorted"),
+    fb("Binary Search", "Medium",
+       "The iterative Binary Search terminates when low is ___ than high.", "greater"),
+]
+
+# ---------------------------------------------------------------------------
+# BINARY SEARCH — Hard
+# ---------------------------------------------------------------------------
+BSEARCH_HARD = [
+    mc("Binary Search", "Hard",
+       "What is the output of Binary Search on {1,3,5,7,9} searching for 6?",
+       [("A", "2"), ("B", "3"), ("C", "-1"), ("D", "4")],
+       "C"),
+    mc("Binary Search", "Hard",
+       "Which variant of Binary Search finds the leftmost position where target could be inserted?",
+       [("A", "Standard Binary Search"), ("B", "Lower Bound"), ("C", "Upper Bound"), ("D", "Exponential Search")],
+       "B"),
+    mc("Binary Search", "Hard",
+       "What is the time complexity of finding all occurrences of a target in a sorted array using Binary Search?",
+       [("A", "O(log n)"), ("B", "O(n)"), ("C", "O(log n + k) where k is the count"), ("D", "O(n log n)")],
+       "C"),
+    mc("Binary Search", "Hard",
+       "In a rotated sorted array, which approach finds the target efficiently?",
+       [("A", "Linear Search"), ("B", "Modified Binary Search checking which half is sorted"), ("C", "Sort then Binary Search"), ("D", "Hash table lookup")],
+       "B"),
+    tf("Binary Search", "Hard",
+       "Binary Search can be applied to find the square root of a number.", "True"),
+    tf("Binary Search", "Hard",
+       "Lower bound Binary Search returns the index of the first element >= target.", "True"),
+    tf("Binary Search", "Hard",
+       "Binary Search on a rotated sorted array always has O(log n) complexity.", "True"),
+    fb("Binary Search", "Hard",
+       "The number of comparisons needed to search 1024 elements with Binary Search is at most ___.", "10"),
+    fb("Binary Search", "Hard",
+       "A Binary Search that finds the first occurrence of a target continues searching the ___ half after finding a match.", "left"),
+    ca("Binary Search", "Hard",
+       "Arrange the code for iterative Binary Search returning the index or -1.",
+       [
+           "int low = 0, high = n - 1;",
+           "while (low <= high) {",
+           "    int mid = low + (high - low) / 2;",
+           "    if (arr[mid] == target) return mid;",
+           "    else if (arr[mid] < target) low = mid + 1;",
+           "    else high = mid - 1;",
+           "}",
+           "return -1;",
+       ]),
+    ca("Binary Search", "Hard",
+       "Arrange the code for recursive Binary Search.",
+       [
+           "int binarySearch(int arr[], int low, int high, int target) {",
+           "    if (low > high) return -1;",
+           "    int mid = low + (high - low) / 2;",
+           "    if (arr[mid] == target) return mid;",
+           "    if (arr[mid] < target) return binarySearch(arr, mid + 1, high, target);",
+           "    return binarySearch(arr, low, mid - 1, target);",
+           "}",
+       ]),
+    ca("Binary Search", "Hard",
+       "Arrange the code to find the first occurrence of target in a sorted array.",
+       [
+           "int low = 0, high = n - 1, result = -1;",
+           "while (low <= high) {",
+           "    int mid = low + (high - low) / 2;",
+           "    if (arr[mid] == target) {",
+           "        result = mid;",
+           "        high = mid - 1;",
+           "    } else if (arr[mid] < target) {",
+           "        low = mid + 1;",
+           "    } else {",
+           "        high = mid - 1;",
+           "    }",
+           "}",
+           "return result;",
+       ]),
+    ca("Binary Search", "Hard",
+       "Arrange the code to count occurrences of target in a sorted array using Binary Search.",
+       [
+           "int first = findFirst(arr, n, target);",
+           "if (first == -1) { printf(\"0\\n\"); return; }",
+           "int last = findLast(arr, n, target);",
+           "printf(\"%d\\n\", last - first + 1);",
+       ]),
+    ca("Binary Search", "Hard",
+       "Arrange the code to find the lower bound (first index >= target) in a sorted array.",
+       [
+           "int low = 0, high = n;",
+           "while (low < high) {",
+           "    int mid = low + (high - low) / 2;",
+           "    if (arr[mid] < target) low = mid + 1;",
+           "    else high = mid;",
+           "}",
+           "return low;",
+       ]),
+    ca("Binary Search", "Hard",
+       "Arrange the code to find the peak element in an array (element greater than its neighbors).",
+       [
+           "int low = 0, high = n - 1;",
+           "while (low < high) {",
+           "    int mid = low + (high - low) / 2;",
+           "    if (arr[mid] < arr[mid + 1]) low = mid + 1;",
+           "    else high = mid;",
+           "}",
+           "return low;",
+       ]),
+]
+
+# ---------------------------------------------------------------------------
+# FUNCTIONS — Easy
+# ---------------------------------------------------------------------------
+FUNCTIONS_EASY = [
+    mc("Functions", "Easy",
+       "What keyword is used to define a function in C?",
+       [("A", "func"), ("B", "def"), ("C", "function"), ("D", "No special keyword — just the return type and name")],
+       "D"),
+    mc("Functions", "Easy",
+       "What does a void function return?",
+       [("A", "0"), ("B", "NULL"), ("C", "Nothing"), ("D", "-1")],
+       "C"),
+    mc("Functions", "Easy",
+       "Which of the following is a valid function declaration in C?",
+       [("A", "int add(int a, int b);"), ("B", "function add(a, b) -> int;"), ("C", "def add(int a, int b):"), ("D", "add(int, int) -> int;")],
+       "A"),
+    mc("Functions", "Easy",
+       "What is the entry point of a C program?",
+       [("A", "start()"), ("B", "begin()"), ("C", "main()"), ("D", "init()")],
+       "C"),
+    mc("Functions", "Easy",
+       "What does the return statement do in a function?",
+       [("A", "Exits the program"), ("B", "Returns a value to the caller and exits the function"), ("C", "Prints a value"), ("D", "Declares a variable")],
+       "B"),
+    mc("Functions", "Easy",
+       "What is a function prototype in C?",
+       [("A", "The function body"), ("B", "A declaration of the function before its definition"), ("C", "A call to the function"), ("D", "A comment describing the function")],
+       "B"),
+    mc("Functions", "Easy",
+       "Which of the following correctly calls a function named square with argument 5?",
+       [("A", "call square(5);"), ("B", "square(5);"), ("C", "invoke square(5);"), ("D", "run square(5);")],
+       "B"),
+    mc("Functions", "Easy",
+       "What is the scope of a local variable declared inside a function?",
+       [("A", "Global"), ("B", "Only within that function"), ("C", "The entire file"), ("D", "The entire program")],
+       "B"),
+    tf("Functions", "Easy",
+       "A function in C must always return a value.", "False"),
+    tf("Functions", "Easy",
+       "The main() function in C returns an integer.", "True"),
+    tf("Functions", "Easy",
+       "A function prototype must match the function definition's return type and parameter types.", "True"),
+    tf("Functions", "Easy",
+       "Local variables in a function retain their values between calls by default.", "False"),
+    tf("Functions", "Easy",
+       "A function can call itself (recursion) in C.", "True"),
+    tf("Functions", "Easy",
+       "You must declare a function before calling it in C.", "True"),
+    tf("Functions", "Easy",
+       "A void function can have a return statement with no value.", "True"),
+    tf("Functions", "Easy",
+       "Parameters passed to a function in C are passed by value by default.", "True"),
+]
+
+# ---------------------------------------------------------------------------
+# FUNCTIONS — Medium
+# ---------------------------------------------------------------------------
+FUNCTIONS_MEDIUM = [
+    mc("Functions", "Medium",
+       "What is the difference between call-by-value and call-by-reference in C?",
+       [("A", "No difference"), ("B", "Call-by-value copies the argument; call-by-reference passes a pointer"), ("C", "Call-by-reference copies the argument"), ("D", "C only supports call-by-reference")],
+       "B"),
+    mc("Functions", "Medium",
+       "What does the static keyword do when applied to a local variable in a function?",
+       [("A", "Makes it global"), ("B", "Preserves its value between function calls"), ("C", "Makes it constant"), ("D", "Allocates it on the heap")],
+       "B"),
+    mc("Functions", "Medium",
+       "What is a recursive function?",
+       [("A", "A function that calls another function"), ("B", "A function that calls itself"), ("C", "A function with no return value"), ("D", "A function with no parameters")],
+       "B"),
+    mc("Functions", "Medium",
+       "What is the output? int f(int x){return x*2;} printf(\"%d\",f(3));",
+       [("A", "3"), ("B", "6"), ("C", "9"), ("D", "2")],
+       "B"),
+    mc("Functions", "Medium",
+       "Which of the following correctly swaps two integers using a function?",
+       [("A", "void swap(int a, int b){int t=a;a=b;b=t;}"),
+        ("B", "void swap(int *a, int *b){int t=*a;*a=*b;*b=t;}"),
+        ("C", "void swap(int a, int b){a=b;b=a;}"),
+        ("D", "int swap(int a, int b){return b,a;}")],
+       "B"),
+    mc("Functions", "Medium",
+       "What is the base case in a recursive factorial function?",
+       [("A", "n == 1 or n == 0"), ("B", "n > 0"), ("C", "n < 0"), ("D", "n == 10")],
+       "A"),
+    mc("Functions", "Medium",
+       "What happens if a recursive function has no base case?",
+       [("A", "It returns 0"), ("B", "It causes infinite recursion and stack overflow"), ("C", "It compiles but does nothing"), ("D", "It returns NULL")],
+       "B"),
+    tf("Functions", "Medium",
+       "In C, you can return multiple values from a function directly.", "False"),
+    tf("Functions", "Medium",
+       "A static local variable is initialized only once, the first time the function is called.", "True"),
+    tf("Functions", "Medium",
+       "Passing a pointer to a function allows the function to modify the original variable.", "True"),
+    tf("Functions", "Medium",
+       "Recursive functions always use more memory than iterative equivalents.", "True"),
+    tf("Functions", "Medium",
+       "A function can return a pointer to a local variable safely.", "False"),
+    fb("Functions", "Medium",
+       "To pass a variable by reference in C, you pass its ___ to the function.", "address"),
+    fb("Functions", "Medium",
+       "A function that calls itself is called a ___ function.", "recursive"),
+    fb("Functions", "Medium",
+       "The keyword ___ preserves a local variable's value between function calls.", "static"),
+    fb("Functions", "Medium",
+       "The return type of a function that returns nothing is ___.", "void"),
+]
+
+# ---------------------------------------------------------------------------
+# FUNCTIONS — Hard
+# ---------------------------------------------------------------------------
+FUNCTIONS_HARD = [
+    mc("Functions", "Hard",
+       "What is a function pointer in C?",
+       [("A", "A pointer to the return value of a function"), ("B", "A variable that stores the address of a function"), ("C", "A pointer passed as a function argument"), ("D", "A pointer to a local variable")],
+       "B"),
+    mc("Functions", "Hard",
+       "Which declaration correctly declares a function pointer for int f(int, int)?",
+       [("A", "int *fp(int, int);"), ("B", "int (*fp)(int, int);"), ("C", "int fp*(int, int);"), ("D", "(*int fp)(int, int);")],
+       "B"),
+    mc("Functions", "Hard",
+       "What is tail recursion?",
+       [("A", "Recursion with no base case"), ("B", "Recursion where the recursive call is the last operation"), ("C", "Recursion that uses a loop"), ("D", "Recursion with multiple base cases")],
+       "B"),
+    mc("Functions", "Hard",
+       "What is the output of: int f(int n){return n<=1?1:n*f(n-1);} printf(\"%d\",f(5));",
+       [("A", "5"), ("B", "25"), ("C", "120"), ("D", "15")],
+       "C"),
+    tf("Functions", "Hard",
+       "Function pointers can be used to implement callbacks in C.", "True"),
+    tf("Functions", "Hard",
+       "Tail-recursive functions can be optimized by compilers to use O(1) stack space.", "True"),
+    tf("Functions", "Hard",
+       "In C, functions can be defined inside other functions.", "False"),
+    fb("Functions", "Hard",
+       "A pointer to a function int f(int) is declared as: int (___)(int);", "*fp"),
+    fb("Functions", "Hard",
+       "The maximum depth of recursion before stack overflow depends on the ___ size.", "stack"),
+    ca("Functions", "Hard",
+       "Arrange the code for a recursive function to compute n! (factorial).",
+       [
+           "int factorial(int n) {",
+           "    if (n <= 1) return 1;",
+           "    return n * factorial(n - 1);",
+           "}",
+       ]),
+    ca("Functions", "Hard",
+       "Arrange the code for a function that swaps two integers using pointers.",
+       [
+           "void swap(int *a, int *b) {",
+           "    int temp = *a;",
+           "    *a = *b;",
+           "    *b = temp;",
+           "}",
+       ]),
+    ca("Functions", "Hard",
+       "Arrange the code for a recursive function to compute the nth Fibonacci number.",
+       [
+           "int fib(int n) {",
+           "    if (n <= 0) return 0;",
+           "    if (n == 1) return 1;",
+           "    return fib(n - 1) + fib(n - 2);",
+           "}",
+       ]),
+    ca("Functions", "Hard",
+       "Arrange the code to declare and use a function pointer for int add(int, int).",
+       [
+           "int add(int a, int b) { return a + b; }",
+           "int (*fp)(int, int) = add;",
+           "int result = fp(3, 4);",
+           "printf(\"%d\\n\", result);",
+       ]),
+    ca("Functions", "Hard",
+       "Arrange the code for a function that returns the maximum of two integers.",
+       [
+           "int max(int a, int b) {",
+           "    if (a > b) return a;",
+           "    return b;",
+           "}",
+       ]),
+    ca("Functions", "Hard",
+       "Arrange the code for a recursive function to compute the sum of digits of a number.",
+       [
+           "int sumDigits(int n) {",
+           "    if (n == 0) return 0;",
+           "    return (n % 10) + sumDigits(n / 10);",
+           "}",
+       ]),
+    ca("Functions", "Hard",
+       "Arrange the code for a function that checks if a number is prime.",
+       [
+           "int isPrime(int n) {",
+           "    if (n < 2) return 0;",
+           "    for (int i = 2; i * i <= n; i++) {",
+           "        if (n % i == 0) return 0;",
+           "    }",
+           "    return 1;",
+           "}",
+       ]),
+]
+
+# ---------------------------------------------------------------------------
+# POINTERS — Easy
+# ---------------------------------------------------------------------------
+POINTERS_EASY = [
+    mc("Pointers", "Easy",
+       "What is a pointer in C?",
+       [("A", "A variable that stores a value"), ("B", "A variable that stores the address of another variable"), ("C", "A function parameter"), ("D", "A type of array")],
+       "B"),
+    mc("Pointers", "Easy",
+       "Which operator is used to get the address of a variable in C?",
+       [("A", "*"), ("B", "&"), ("C", "->"), ("D", ".")],
+       "B"),
+    mc("Pointers", "Easy",
+       "Which operator is used to dereference a pointer in C?",
+       [("A", "&"), ("B", "->"), ("C", "*"), ("D", ".")],
+       "C"),
+    mc("Pointers", "Easy",
+       "How do you declare a pointer to an integer in C?",
+       [("A", "int p;"), ("B", "int &p;"), ("C", "int *p;"), ("D", "pointer int p;")],
+       "C"),
+    mc("Pointers", "Easy",
+       "What is the value of *p if int x = 10; int *p = &x;?",
+       [("A", "Address of x"), ("B", "10"), ("C", "0"), ("D", "Undefined")],
+       "B"),
+    mc("Pointers", "Easy",
+       "What is a NULL pointer?",
+       [("A", "A pointer to 0"), ("B", "A pointer that points to nothing (address 0)"), ("C", "An uninitialized pointer"), ("D", "A pointer to a null character")],
+       "B"),
+    mc("Pointers", "Easy",
+       "What does int *p = NULL; mean?",
+       [("A", "p points to an integer with value 0"), ("B", "p is initialized to point to nothing"), ("C", "p is an invalid pointer"), ("D", "p points to the integer NULL")],
+       "B"),
+    mc("Pointers", "Easy",
+       "What is the size of a pointer on a 64-bit system?",
+       [("A", "4 bytes"), ("B", "2 bytes"), ("C", "8 bytes"), ("D", "Depends on the type it points to")],
+       "C"),
+    tf("Pointers", "Easy",
+       "A pointer stores the memory address of another variable.", "True"),
+    tf("Pointers", "Easy",
+       "The size of a pointer depends on the data type it points to.", "False"),
+    tf("Pointers", "Easy",
+       "Dereferencing a NULL pointer causes undefined behavior.", "True"),
+    tf("Pointers", "Easy",
+       "int *p and int* p are equivalent declarations in C.", "True"),
+    tf("Pointers", "Easy",
+       "You can assign an integer value directly to a pointer variable.", "False"),
+    tf("Pointers", "Easy",
+       "The & operator gives the address of a variable.", "True"),
+    tf("Pointers", "Easy",
+       "A pointer must be initialized before it is dereferenced.", "True"),
+    tf("Pointers", "Easy",
+       "All pointers in C have the same size regardless of what they point to.", "True"),
+]
+
+# ---------------------------------------------------------------------------
+# POINTERS — Medium
+# ---------------------------------------------------------------------------
+POINTERS_MEDIUM = [
+    mc("Pointers", "Medium",
+       "What is pointer arithmetic? If int *p = arr; what does p+1 point to?",
+       [("A", "The byte after p"), ("B", "The next integer element after arr[0]"), ("C", "The previous element"), ("D", "NULL")],
+       "B"),
+    mc("Pointers", "Medium",
+       "What is a double pointer (int **p)?",
+       [("A", "A pointer to two integers"), ("B", "A pointer to a pointer to an integer"), ("C", "Two pointers"), ("D", "A pointer with double precision")],
+       "B"),
+    mc("Pointers", "Medium",
+       "What does the -> operator do?",
+       [("A", "Dereferences a pointer"), ("B", "Accesses a struct member through a pointer"), ("C", "Gets the address of a struct"), ("D", "Compares two pointers")],
+       "B"),
+    mc("Pointers", "Medium",
+       "What is the output? int x=5; int *p=&x; *p=10; printf(\"%d\",x);",
+       [("A", "5"), ("B", "10"), ("C", "Address of x"), ("D", "Undefined")],
+       "B"),
+    mc("Pointers", "Medium",
+       "What is a dangling pointer?",
+       [("A", "A pointer to NULL"), ("B", "A pointer that points to freed or out-of-scope memory"), ("C", "An uninitialized pointer"), ("D", "A pointer to a global variable")],
+       "B"),
+    mc("Pointers", "Medium",
+       "What does malloc() return?",
+       [("A", "An integer"), ("B", "A void pointer to allocated memory"), ("C", "A NULL pointer always"), ("D", "The size of allocated memory")],
+       "B"),
+    mc("Pointers", "Medium",
+       "What should you do after freeing a pointer with free(p)?",
+       [("A", "Nothing"), ("B", "Set p = NULL"), ("C", "Reallocate it"), ("D", "Print its value")],
+       "B"),
+    tf("Pointers", "Medium",
+       "Pointer arithmetic advances by the size of the pointed-to type.", "True"),
+    tf("Pointers", "Medium",
+       "A dangling pointer is safe to dereference.", "False"),
+    tf("Pointers", "Medium",
+       "malloc() returns NULL if memory allocation fails.", "True"),
+    tf("Pointers", "Medium",
+       "You can subtract two pointers of the same type to get the number of elements between them.", "True"),
+    tf("Pointers", "Medium",
+       "free() must be called for every malloc() to avoid memory leaks.", "True"),
+    fb("Pointers", "Medium",
+       "A pointer to a pointer is declared as int ___p;", "**"),
+    fb("Pointers", "Medium",
+       "To access a struct member through a pointer p, you use p___member.", "->"),
+    fb("Pointers", "Medium",
+       "The function ___ allocates memory on the heap in C.", "malloc"),
+    fb("Pointers", "Medium",
+       "After calling free(p), you should set p to ___ to avoid a dangling pointer.", "NULL"),
+]
+
+# ---------------------------------------------------------------------------
+# POINTERS — Hard
+# ---------------------------------------------------------------------------
+POINTERS_HARD = [
+    mc("Pointers", "Hard",
+       "What is the output? int a[]={1,2,3}; int *p=a; printf(\"%d\",*(p+2));",
+       [("A", "1"), ("B", "2"), ("C", "3"), ("D", "Address")],
+       "C"),
+    mc("Pointers", "Hard",
+       "What is a void pointer (void *)?",
+       [("A", "A pointer that points to nothing"), ("B", "A generic pointer that can point to any type"), ("C", "A pointer with no size"), ("D", "A NULL pointer")],
+       "B"),
+    mc("Pointers", "Hard",
+       "What is the difference between const int *p and int * const p?",
+       [("A", "No difference"), ("B", "const int *p: can't change *p; int * const p: can't change p"), ("C", "const int *p: can't change p; int * const p: can't change *p"), ("D", "Both prevent any modification")],
+       "B"),
+    mc("Pointers", "Hard",
+       "What does realloc() do?",
+       [("A", "Frees memory"), ("B", "Resizes a previously allocated memory block"), ("C", "Allocates and zeros memory"), ("D", "Copies memory")],
+       "B"),
+    tf("Pointers", "Hard",
+       "A void pointer must be cast to the appropriate type before dereferencing.", "True"),
+    tf("Pointers", "Hard",
+       "const int *p means the pointer itself cannot be changed.", "False"),
+    tf("Pointers", "Hard",
+       "Pointer arithmetic is valid on void pointers in standard C.", "False"),
+    fb("Pointers", "Hard",
+       "A pointer to a function returning int with two int parameters is declared as: int (___)(int, int);", "*fp"),
+    fb("Pointers", "Hard",
+       "The function ___ allocates memory and initializes it to zero.", "calloc"),
+    ca("Pointers", "Hard",
+       "Arrange the code to dynamically allocate an array of n integers and initialize them to 0.",
+       [
+           "int *arr = (int *)malloc(n * sizeof(int));",
+           "if (arr == NULL) { printf(\"Allocation failed\\n\"); return 1; }",
+           "for (int i = 0; i < n; i++) {",
+           "    arr[i] = 0;",
+           "}",
+           "free(arr);",
+       ]),
+    ca("Pointers", "Hard",
+       "Arrange the code to swap two integers using pointers.",
+       [
+           "void swap(int *a, int *b) {",
+           "    int temp = *a;",
+           "    *a = *b;",
+           "    *b = temp;",
+           "}",
+       ]),
+    ca("Pointers", "Hard",
+       "Arrange the code to traverse an array using pointer arithmetic.",
+       [
+           "int arr[] = {10, 20, 30, 40, 50};",
+           "int *p = arr;",
+           "for (int i = 0; i < 5; i++) {",
+           "    printf(\"%d \", *(p + i));",
+           "}",
+       ]),
+    ca("Pointers", "Hard",
+       "Arrange the code to dynamically allocate a string, copy into it, and free it.",
+       [
+           "char *str = (char *)malloc(20 * sizeof(char));",
+           "if (str == NULL) return 1;",
+           "strcpy(str, \"Hello, World!\");",
+           "printf(\"%s\\n\", str);",
+           "free(str);",
+           "str = NULL;",
+       ]),
+    ca("Pointers", "Hard",
+       "Arrange the code to implement a function that returns the length of a string using a pointer.",
+       [
+           "int strLen(const char *s) {",
+           "    int len = 0;",
+           "    while (*s != '\\0') {",
+           "        len++;",
+           "        s++;",
+           "    }",
+           "    return len;",
+           "}",
+       ]),
+    ca("Pointers", "Hard",
+       "Arrange the code to use a double pointer to modify a pointer inside a function.",
+       [
+           "void allocate(int **p, int size) {",
+           "    *p = (int *)malloc(size * sizeof(int));",
+           "}",
+           "int *arr = NULL;",
+           "allocate(&arr, 10);",
+           "free(arr);",
+       ]),
+    ca("Pointers", "Hard",
+       "Arrange the code to find the maximum element using pointer arithmetic.",
+       [
+           "int *max_ptr = arr;",
+           "for (int i = 1; i < n; i++) {",
+           "    if (*(arr + i) > *max_ptr) {",
+           "        max_ptr = arr + i;",
+           "    }",
+           "}",
+           "printf(\"%d\\n\", *max_ptr);",
+       ]),
+]
+
+# ---------------------------------------------------------------------------
+# Master question list
+# ---------------------------------------------------------------------------
+ALL_QUESTIONS = (
+    ARRAYS_EASY + ARRAYS_MEDIUM + ARRAYS_HARD
+    + MULTI_EASY + MULTI_MEDIUM + MULTI_HARD
+    + SORTING_EASY + SORTING_MEDIUM + SORTING_HARD
+    + BSEARCH_EASY + BSEARCH_MEDIUM + BSEARCH_HARD
+    + FUNCTIONS_EASY + FUNCTIONS_MEDIUM + FUNCTIONS_HARD
+    + POINTERS_EASY + POINTERS_MEDIUM + POINTERS_HARD
+)
+
+
+# ---------------------------------------------------------------------------
+# Seed function
+# ---------------------------------------------------------------------------
+def seed():
+    db = SessionLocal()
+    try:
+        # Idempotency check
+        existing = db.query(Question).count()
+        if existing > 0:
+            print(f"Database already contains {existing} questions. Skipping seed.")
+            return
+
+        questions_inserted = 0
+        choices_inserted = 0
+        blocks_inserted = 0
+
+        for q_data in ALL_QUESTIONS:
+            q = Question(
+                topic=q_data["topic"],
+                difficulty=q_data["difficulty"],
+                question_type=q_data["question_type"],
+                question_text=q_data["question_text"],
+                correct_answer=q_data["correct_answer"],
+            )
+            db.add(q)
+            db.flush()  # get q.id without committing
+
+            # Insert choices for multiple_choice questions
+            for label, text in q_data.get("choices", []):
+                c = Choice(
+                    question_id=q.id,
+                    label=label,
+                    text=text,
+                )
+                db.add(c)
+                choices_inserted += 1
+
+            # Insert code blocks for code_arrangement questions
+            for idx, content in enumerate(q_data.get("code_blocks", [])):
+                cb = CodeBlock(
+                    question_id=q.id,
+                    correct_index=idx,
+                    content=content,
+                )
+                db.add(cb)
+                blocks_inserted += 1
+
+            questions_inserted += 1
+
+        db.commit()
+
+        print("Seed complete!")
+        print(f"  Questions inserted : {questions_inserted}")
+        print(f"  Choices inserted   : {choices_inserted}")
+        print(f"  Code blocks inserted: {blocks_inserted}")
+
+        # Per-topic/difficulty summary
+        print("\nBreakdown:")
+        topics = [
+            "Arrays",
+            "Multidimensional Arrays",
+            "Basic Sorting Algorithms",
+            "Binary Search",
+            "Functions",
+            "Pointers",
+        ]
+        difficulties = ["Easy", "Medium", "Hard"]
+        for topic in topics:
+            for diff in difficulties:
+                count = db.query(Question).filter(
+                    Question.topic == topic,
+                    Question.difficulty == diff,
+                ).count()
+                print(f"  {topic} / {diff}: {count} questions")
+
+    except Exception as e:
+        db.rollback()
+        print(f"Error during seeding: {e}")
+        raise
+    finally:
+        db.close()
+
+
+if __name__ == "__main__":
+    seed()

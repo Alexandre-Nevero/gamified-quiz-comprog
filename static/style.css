@@ -1,0 +1,387 @@
+/* ============================================================
+   CompProg 2 Quiz App — Retro Terminal Theme
+   Font: Press Start 2P (loaded via <link> in index.html)
+   Palette: #00ff41 (terminal green) on #0d0d0d (near-black)
+   ============================================================ */
+
+/* ---- Reset & Base ---- */
+*, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html {
+    font-size: 16px;
+}
+
+body {
+    background: #0d0d0d;
+    color: #00ff41;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 0.75rem;
+    line-height: 1.8;
+    min-height: 100vh;
+    position: relative;
+    overflow-x: hidden;
+}
+
+/* ---- Scanline Effect ---- */
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 9999;
+    background: repeating-linear-gradient(
+        to bottom,
+        transparent 0px,
+        transparent 3px,
+        rgba(0, 0, 0, 0.15) 3px,
+        rgba(0, 0, 0, 0.15) 4px
+    );
+}
+
+/* ---- Links ---- */
+a {
+    color: #00ff41;
+    text-decoration: none;
+    transition: color 0.15s, text-shadow 0.15s;
+}
+
+a:hover {
+    color: #ffffff;
+    text-shadow: 0 0 8px #00ff41;
+}
+
+/* ---- Navigation ---- */
+#main-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    padding: 0.75rem 1.5rem;
+    border-bottom: 1px solid #00ff41;
+    background: #0d0d0d;
+}
+
+.nav-brand {
+    font-size: 0.85rem;
+    letter-spacing: 0.05em;
+    text-shadow: 0 0 10px #00ff41;
+}
+
+.nav-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    align-items: center;
+}
+
+.nav-links a {
+    font-size: 0.6rem;
+    padding: 0.25rem 0.5rem;
+    border: 1px solid transparent;
+    transition: border-color 0.15s, text-shadow 0.15s;
+}
+
+.nav-links a:hover {
+    border-color: #00ff41;
+    text-shadow: 0 0 6px #00ff41;
+}
+
+#nav-xp {
+    font-size: 0.55rem;
+    color: #00ff41;
+    text-shadow: 0 0 6px #00ff41;
+    white-space: nowrap;
+}
+
+/* ---- Main Content Area ---- */
+main {
+    padding: 2rem 1.5rem;
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+#app {
+    min-height: 60vh;
+}
+
+/* ---- Utility ---- */
+.hidden {
+    display: none !important;
+}
+
+/* ---- Cards / Containers ---- */
+.card {
+    border: 1px solid #00ff41;
+    padding: 1.5rem;
+    margin: 1rem 0;
+    background: #0d0d0d;
+}
+
+.card-title {
+    font-size: 0.85rem;
+    margin-bottom: 1rem;
+    text-shadow: 0 0 8px #00ff41;
+}
+
+/* ---- Buttons ---- */
+button,
+.btn {
+    display: inline-block;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 0.65rem;
+    color: #00ff41;
+    background: #0d0d0d;
+    border: 1px solid #00ff41;
+    padding: 0.6rem 1rem;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s, box-shadow 0.15s;
+    line-height: 1.4;
+}
+
+button:hover,
+.btn:hover {
+    background: #00ff41;
+    color: #0d0d0d;
+    box-shadow: 0 0 10px #00ff41;
+}
+
+button:active,
+.btn:active {
+    box-shadow: 0 0 4px #00ff41;
+}
+
+button:disabled,
+.btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+button:disabled:hover,
+.btn:disabled:hover {
+    background: #0d0d0d;
+    color: #00ff41;
+    box-shadow: none;
+}
+
+/* ---- Inputs & Selects ---- */
+input[type="text"],
+input[type="password"],
+input[type="email"],
+select,
+textarea {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 0.65rem;
+    color: #00ff41;
+    background: #0d0d0d;
+    border: 1px solid #00ff41;
+    padding: 0.6rem 0.75rem;
+    width: 100%;
+    outline: none;
+    transition: box-shadow 0.15s;
+    line-height: 1.4;
+}
+
+input[type="text"]:focus,
+input[type="password"]:focus,
+input[type="email"]:focus,
+select:focus,
+textarea:focus {
+    box-shadow: 0 0 8px #00ff41;
+}
+
+select option {
+    background: #0d0d0d;
+    color: #00ff41;
+}
+
+/* ---- Form Groups ---- */
+.form-group {
+    margin-bottom: 1.25rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-size: 0.6rem;
+}
+
+/* ---- Headings ---- */
+h1, h2, h3, h4 {
+    font-family: 'Press Start 2P', monospace;
+    color: #00ff41;
+    text-shadow: 0 0 8px #00ff41;
+    line-height: 1.5;
+    margin-bottom: 1rem;
+}
+
+h1 { font-size: 1.1rem; }
+h2 { font-size: 0.9rem; }
+h3 { font-size: 0.75rem; }
+h4 { font-size: 0.65rem; }
+
+/* ---- Tables (Leaderboard) ---- */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1rem 0;
+}
+
+th, td {
+    border: 1px solid #00ff41;
+    padding: 0.6rem 0.75rem;
+    text-align: left;
+    font-size: 0.6rem;
+}
+
+th {
+    background: #001a00;
+    text-shadow: 0 0 4px #00ff41;
+}
+
+tr:hover td {
+    background: #001a00;
+}
+
+/* ---- Alert / Message Boxes ---- */
+.alert {
+    border: 1px solid #00ff41;
+    padding: 0.75rem 1rem;
+    margin: 0.75rem 0;
+    font-size: 0.6rem;
+}
+
+.alert-error {
+    border-color: #ff4141;
+    color: #ff4141;
+}
+
+.alert-success {
+    border-color: #00ff41;
+    color: #00ff41;
+    text-shadow: 0 0 4px #00ff41;
+}
+
+/* ---- Quiz Answer Options ---- */
+.answer-option {
+    display: block;
+    width: 100%;
+    text-align: left;
+    margin: 0.4rem 0;
+}
+
+.answer-option.correct {
+    background: #00ff41;
+    color: #0d0d0d;
+    border-color: #00ff41;
+}
+
+.answer-option.incorrect {
+    border-color: #ff4141;
+    color: #ff4141;
+}
+
+/* ---- Code Arrangement Drag-and-Drop ---- */
+.code-block {
+    border: 1px solid #00ff41;
+    padding: 0.5rem 0.75rem;
+    margin: 0.3rem 0;
+    cursor: grab;
+    font-family: 'Courier New', monospace;
+    font-size: 0.7rem;
+    background: #0d0d0d;
+    transition: background 0.1s, box-shadow 0.1s;
+    user-select: none;
+}
+
+.code-block:hover {
+    background: #001a00;
+    box-shadow: 0 0 6px #00ff41;
+}
+
+.code-block.dragging {
+    opacity: 0.5;
+    cursor: grabbing;
+}
+
+.code-block.drag-over {
+    border-color: #ffffff;
+    box-shadow: 0 0 8px #ffffff;
+}
+
+/* ---- Progress / XP Bar ---- */
+.xp-bar-container {
+    border: 1px solid #00ff41;
+    height: 12px;
+    margin: 0.5rem 0;
+    background: #0d0d0d;
+}
+
+.xp-bar-fill {
+    height: 100%;
+    background: #00ff41;
+    transition: width 0.4s ease;
+}
+
+/* ---- Level Badge ---- */
+.level-badge {
+    display: inline-block;
+    border: 1px solid #00ff41;
+    padding: 0.2rem 0.5rem;
+    font-size: 0.55rem;
+    text-shadow: 0 0 4px #00ff41;
+}
+
+/* ---- Level-up Notification ---- */
+.level-up-notification {
+    border: 2px solid #00ff41;
+    padding: 1rem;
+    text-align: center;
+    text-shadow: 0 0 12px #00ff41;
+    animation: flicker 0.5s ease-in-out 3;
+    margin: 1rem 0;
+}
+
+@keyframes flicker {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+}
+
+/* ---- Responsive ---- */
+@media (max-width: 600px) {
+    html {
+        font-size: 14px;
+    }
+
+    #main-nav {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 0.75rem 1rem;
+    }
+
+    .nav-links {
+        gap: 0.6rem;
+    }
+
+    main {
+        padding: 1.25rem 1rem;
+    }
+
+    h1 { font-size: 0.9rem; }
+    h2 { font-size: 0.75rem; }
+
+    table {
+        font-size: 0.55rem;
+    }
+
+    th, td {
+        padding: 0.4rem 0.5rem;
+    }
+}

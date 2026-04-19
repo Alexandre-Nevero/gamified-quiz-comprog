@@ -4,6 +4,7 @@ from fastapi.responses import FileResponse
 
 from app.database import engine
 from app import models  # noqa: F401 — ensures models are registered with Base
+from app.routers import auth, quiz, users, leaderboard
 
 app = FastAPI(title="CompProg 2 Quiz App")
 
@@ -14,12 +15,10 @@ def on_startup():
     models.Base.metadata.create_all(bind=engine)
 
 
-# TODO: Register routers here once implemented
-# from app.routers import auth, quiz, users, leaderboard
-# app.include_router(auth.router, prefix="/api")
-# app.include_router(quiz.router, prefix="/api")
-# app.include_router(users.router, prefix="/api")
-# app.include_router(leaderboard.router, prefix="/api")
+app.include_router(auth.router, prefix="/api")
+app.include_router(quiz.router, prefix="/api")
+app.include_router(users.router, prefix="/api")
+app.include_router(leaderboard.router, prefix="/api")
 
 # Mount static files directory
 app.mount("/static", StaticFiles(directory="static"), name="static")

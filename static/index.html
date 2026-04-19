@@ -4,8 +4,31 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>CompProg 2 Quiz App</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-    <div id="app">Loading...</div>
+    <header>
+        <nav id="main-nav">
+            <a href="#home" class="nav-brand">CompProg2</a>
+            <div class="nav-links">
+                <a href="#home" id="nav-home">Home</a>
+                <a href="#leaderboard" id="nav-leaderboard">Leaderboard</a>
+                <a href="#login" id="nav-login">Login</a>
+                <a href="#register" id="nav-register">Register</a>
+                <a href="#profile" id="nav-profile" class="hidden">Profile</a>
+                <a href="#" id="nav-logout" class="hidden">Logout</a>
+            </div>
+            <div id="nav-xp" class="hidden"></div>
+        </nav>
+    </header>
+
+    <main>
+        <div id="app">Loading...</div>
+    </main>
+
+    <script src="app.js"></script>
 </body>
 </html>
