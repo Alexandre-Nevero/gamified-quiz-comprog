@@ -15,7 +15,7 @@ A gamified quiz web application focused on CompProg 2 (C language) concepts. The
 - **XP_Service**: The component that tracks and updates user experience points and levels.
 - **Leaderboard_Service**: The component that computes and serves the ranked list of users by XP.
 - **User**: A registered person who interacts with the quiz application.
-- **Guest**: An unauthenticated visitor who takes quizzes without registering; progress is not saved and the Guest does not appear on the Leaderboard.
+- **Guest**: An unauthenticated visitor who takes quizzes without registering. During a quiz session, the Guest's XP is tracked client-side (in the browser via localStorage or in-memory JS) and displayed in the session summary, but it is never persisted to the database. The Guest does not appear on the Leaderboard. If the Guest registers or logs in after accumulating XP, that XP is transferred to their account; otherwise it is lost when the browser session ends.
 - **Session**: An authenticated context established after a successful login, identified by a token.
 - **Question**: A single quiz item belonging to a topic, difficulty level, and question type.
 - **Topic**: A subject area covered by the quiz. Valid topics: Arrays, Multidimensional Arrays, Basic Sorting Algorithms, Binary Search, Functions, Pointers.
@@ -92,7 +92,7 @@ A gamified quiz web application focused on CompProg 2 (C language) concepts. The
 6. WHEN a visitor answers a question correctly, THE Quiz_Engine SHALL record the result as correct and display a correct-answer confirmation to the visitor.
 7. WHEN a visitor answers a question incorrectly, THE Quiz_Engine SHALL record the result as incorrect and display the correct answer to the visitor.
 8. WHEN all 10 questions in a quiz session have been answered, THE Quiz_Engine SHALL display a session summary showing the number of correct answers, total questions, and XP earned.
-9. WHEN a Guest completes a quiz session, THE Quiz_Engine SHALL display the session summary but SHALL NOT persist the results or award XP.
+9. WHEN a Guest completes a quiz session, THE Quiz_Engine SHALL display the session summary including the XP that would have been earned, but SHALL NOT persist the results or XP to the database.
 
 ---
 
@@ -110,6 +110,9 @@ A gamified quiz web application focused on CompProg 2 (C language) concepts. The
 6. WHEN a User's total XP is updated, THE XP_Service SHALL recalculate that User's Level according to the defined XP-to-Level thresholds.
 7. THE XP_Service SHALL define Level thresholds as follows: Level 1 = 0–99 XP, Level 2 = 100–249 XP, Level 3 = 250–499 XP, Level 4 = 500–999 XP, Level 5 = 1000+ XP. Levels are cosmetic and do not restrict access to any Difficulty.
 8. WHEN a User's Level increases as a result of an XP update, THE XP_Service SHALL include the new Level in the response so the frontend can display a level-up notification.
+9. WHEN a Guest completes a quiz session, THE System SHALL track the Guest's earned XP client-side (in the browser via localStorage or in-memory JavaScript) for the duration of the browser session and display it to the Guest; this XP SHALL NOT be written to the database.
+10. WHEN a Guest's browser session ends without the Guest registering or logging in, THE System SHALL discard the client-side XP; it is not recoverable.
+11. WHEN a Guest who has accumulated client-side XP registers a new account or logs in to an existing account, THE Auth_Service SHALL accept an optional `guest_xp` parameter (a non-negative integer) and, on successful registration or login, SHALL add that value to the user's stored XP total.
 
 ---
 
