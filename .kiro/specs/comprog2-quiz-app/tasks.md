@@ -10,7 +10,7 @@ Tasks marked `*` are optional (property-based or unit tests) and can be skipped 
 
 ## Tasks
 
-- [-] 1. Set up project structure and database foundation
+- [x] 1. Set up project structure and database foundation
   - Create the directory layout: `app/`, `app/routers/`, `app/services/`, `static/`, `tests/`
   - Create `requirements.txt` with pinned versions: `fastapi`, `uvicorn`, `sqlalchemy`, `passlib[bcrypt]`, `hypothesis`, `pytest`, `pytest-asyncio`
   - Create `app/database.py`: SQLAlchemy engine pointed at `quiz.db`, `SessionLocal` factory, `Base` declarative base, and a `get_db` dependency
@@ -18,8 +18,8 @@ Tasks marked `*` are optional (property-based or unit tests) and can be skipped 
   - Create `app/main.py`: initialize FastAPI app, call `Base.metadata.create_all()` on startup, mount `static/` with `StaticFiles`, register routers (stubs for now), and add a catch-all route that returns `index.html`
   - _Requirements: 7.1, 7.2, 7.3, 7.4, 7.5, 10.1, 10.2, 10.3_
 
-- [ ] 2. Implement pure utility functions
-  - [ ] 2.1 Implement `calculate_level(xp: int) -> int` in `app/services/xp_service.py`
+- [x] 2. Implement pure utility functions
+  - [x] 2.1 Implement `calculate_level(xp: int) -> int` in `app/services/xp_service.py`
     - Return 1/2/3/4/5 based on XP thresholds (0–99, 100–249, 250–499, 500–999, 1000+)
     - _Requirements: 5.6, 5.7_
 
@@ -28,7 +28,7 @@ Tasks marked `*` are optional (property-based or unit tests) and can be skipped 
     - Use `@given(st.integers(min_value=0))` to verify all threshold boundaries
     - **Validates: Requirements 5.6, 5.7, 5.8**
 
-  - [ ] 2.3 Implement `normalize_answer(s: str) -> str` in `app/services/quiz_service.py`
+  - [x] 2.3 Implement `normalize_answer(s: str) -> str` in `app/services/quiz_service.py`
     - Strip leading/trailing whitespace → lowercase → collapse multiple spaces → strip trailing semicolons
     - _Requirements: 4.4_
 
@@ -38,7 +38,7 @@ Tasks marked `*` are optional (property-based or unit tests) and can be skipped 
     - Sub-task B: generated variants with extra whitespace, mixed case, trailing `;` — assert all evaluate as correct
     - **Validates: Requirements 4.4**
 
-- [ ] 3. Implement the seed script
+- [-] 3. Implement the seed script
   - Create `seed.py` at the project root
   - Add at least 15 questions per topic per difficulty (covering all 6 topics × 3 difficulties)
   - Include `choices` rows for every Multiple Choice question (4 choices each, one marked correct)
