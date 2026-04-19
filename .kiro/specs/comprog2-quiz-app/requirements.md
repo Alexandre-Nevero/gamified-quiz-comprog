@@ -108,7 +108,7 @@ A gamified quiz web application focused on CompProg 2 (C language) concepts. The
 4. WHEN a User answers a question incorrectly, THE XP_Service SHALL award 0 XP to that User for that question.
 5. THE XP_Service SHALL maintain a cumulative total XP value for each User that persists across sessions.
 6. WHEN a User's total XP is updated, THE XP_Service SHALL recalculate that User's Level according to the defined XP-to-Level thresholds.
-7. THE XP_Service SHALL define Level thresholds as follows: Level 1 = 0–99 XP, Level 2 = 100–249 XP, Level 3 = 250–499 XP, Level 4 = 500–999 XP, Level 5 = 1000+ XP. Levels are cosmetic and do not restrict access to any Difficulty.
+7. THE XP_Service SHALL define Level thresholds as follows: Level 1 = 0–49 XP, Level 2 = 50–119 XP, Level 3 = 120–249 XP, Level 4 = 250–499 XP, Level 5 = 500+ XP. Levels are cosmetic and do not restrict access to any Difficulty.
 8. WHEN a User's Level increases as a result of an XP update, THE XP_Service SHALL include the new Level in the response so the frontend can display a level-up notification.
 9. WHEN a Guest completes a quiz session, THE System SHALL track the Guest's earned XP client-side (in the browser via localStorage or in-memory JavaScript) for the duration of the browser session and display it to the Guest; this XP SHALL NOT be written to the database.
 10. WHEN a Guest's browser session ends without the Guest registering or logging in, THE System SHALL discard the client-side XP; it is not recoverable.

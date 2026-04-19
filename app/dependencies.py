@@ -15,6 +15,10 @@ def get_current_user(
     if not token:
         raise HTTPException(status_code=401, detail="Not authenticated")
 
+    # Strip "Bearer " prefix if present (sent by frontend fetch calls)
+    if token.startswith("Bearer "):
+        token = token[7:]
+
     session = db.query(SessionModel).filter(SessionModel.token == token).first()
     if session is None:
         raise HTTPException(status_code=401, detail="Not authenticated")
@@ -33,6 +37,10 @@ def get_optional_user(
     """FastAPI dependency that returns the authenticated User or None for guests."""
     if not token:
         return None
+
+    # Strip "Bearer " prefix if present (sent by frontend fetch calls)
+    if token.startswith("Bearer "):
+        token = token[7:]
 
     session = db.query(SessionModel).filter(SessionModel.token == token).first()
     if session is None:

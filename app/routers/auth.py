@@ -44,5 +44,7 @@ def logout(
     db: DBSession = Depends(get_db),
 ):
     """Invalidate the current session token."""
+    if token and token.startswith("Bearer "):
+        token = token[7:]
     logout_user(db, token)
     return {"message": "Logged out successfully"}

@@ -667,3 +667,438 @@ tr:hover td {
         font-size: 1.2rem;
     }
 }
+
+/* ============================================================
+   Home Page — Interactive Hero, Topic Cards, Difficulty Pills
+   ============================================================ */
+
+/* ---- Hero Section ---- */
+.home-hero {
+    text-align: center;
+    padding: 2.5rem 1rem 2rem;
+    animation: fadeInDown 0.5s ease;
+}
+
+@keyframes fadeInDown {
+    from { opacity: 0; transform: translateY(-12px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.home-hero-badge {
+    display: inline-block;
+    background: rgba(3, 239, 98, 0.1);
+    color: #03ef62;
+    border: 1px solid rgba(3, 239, 98, 0.25);
+    border-radius: 20px;
+    padding: 0.3rem 0.9rem;
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    margin-bottom: 1rem;
+}
+
+.home-hero-title {
+    font-size: 2rem;
+    font-weight: 800;
+    color: #e8eaf0;
+    letter-spacing: -0.03em;
+    margin-bottom: 0.6rem;
+    line-height: 1.2;
+}
+
+.home-hero-sub {
+    font-size: 0.95rem;
+    color: #6b6f8a;
+    max-width: 480px;
+    margin: 0 auto;
+    line-height: 1.7;
+}
+
+/* ---- Section Labels ---- */
+.home-section {
+    margin-bottom: 2rem;
+    animation: fadeInUp 0.4s ease both;
+}
+
+.home-section:nth-child(2) { animation-delay: 0.1s; }
+.home-section:nth-child(3) { animation-delay: 0.2s; }
+
+.home-section-label {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: #a0a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 0.85rem;
+}
+
+/* ---- Topic Cards Grid ---- */
+.topic-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.75rem;
+}
+
+@media (max-width: 640px) {
+    .topic-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 400px) {
+    .topic-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.topic-card {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.3rem;
+    padding: 1rem 1.1rem;
+    background: #22253a;
+    border: 1px solid #2a2d45;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s, transform 0.15s, box-shadow 0.15s;
+    text-align: left;
+    font-family: 'Inter', sans-serif;
+}
+
+.topic-card:hover {
+    border-color: #03ef62;
+    background: rgba(3, 239, 98, 0.04);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(3, 239, 98, 0.1);
+}
+
+.topic-card.selected {
+    border-color: #03ef62;
+    background: rgba(3, 239, 98, 0.08);
+    box-shadow: 0 0 0 2px rgba(3, 239, 98, 0.2);
+}
+
+.topic-icon {
+    font-size: 1.1rem;
+    color: #03ef62;
+    font-family: 'JetBrains Mono', 'Courier New', monospace;
+    font-weight: 700;
+    line-height: 1;
+    margin-bottom: 0.15rem;
+}
+
+.topic-name {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #e8eaf0;
+    line-height: 1.3;
+}
+
+.topic-desc {
+    font-size: 0.72rem;
+    color: #6b6f8a;
+    line-height: 1.4;
+}
+
+/* ---- Difficulty Pills ---- */
+.diff-pills {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.diff-pill {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.2rem;
+    padding: 0.75rem 1.25rem;
+    border-radius: 10px;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s, transform 0.15s;
+    font-family: 'Inter', sans-serif;
+    min-width: 140px;
+    flex: 1;
+}
+
+.diff-label {
+    font-size: 0.9rem;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.diff-desc {
+    font-size: 0.72rem;
+    opacity: 0.75;
+    line-height: 1.3;
+}
+
+/* Easy — green */
+.diff-easy {
+    background: rgba(3, 239, 98, 0.07);
+    border-color: rgba(3, 239, 98, 0.2);
+    color: #03ef62;
+}
+.diff-easy:hover {
+    background: rgba(3, 239, 98, 0.12);
+    border-color: #03ef62;
+    transform: translateY(-2px);
+}
+.diff-easy.selected {
+    background: rgba(3, 239, 98, 0.15);
+    border-color: #03ef62;
+    box-shadow: 0 0 0 2px rgba(3, 239, 98, 0.2);
+}
+
+/* Medium — amber */
+.diff-medium {
+    background: rgba(251, 191, 36, 0.07);
+    border-color: rgba(251, 191, 36, 0.2);
+    color: #fbbf24;
+}
+.diff-medium:hover {
+    background: rgba(251, 191, 36, 0.12);
+    border-color: #fbbf24;
+    transform: translateY(-2px);
+}
+.diff-medium.selected {
+    background: rgba(251, 191, 36, 0.15);
+    border-color: #fbbf24;
+    box-shadow: 0 0 0 2px rgba(251, 191, 36, 0.2);
+}
+
+/* Hard — red */
+.diff-hard {
+    background: rgba(239, 68, 68, 0.07);
+    border-color: rgba(239, 68, 68, 0.2);
+    color: #f87171;
+}
+.diff-hard:hover {
+    background: rgba(239, 68, 68, 0.12);
+    border-color: #ef4444;
+    transform: translateY(-2px);
+}
+.diff-hard.selected {
+    background: rgba(239, 68, 68, 0.15);
+    border-color: #ef4444;
+    box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.2);
+}
+
+/* ---- Start Button Row ---- */
+.home-start-row {
+    margin-top: 0.5rem;
+    animation: fadeInUp 0.4s ease 0.3s both;
+}
+
+.btn-start {
+    width: 100%;
+    padding: 0.9rem 1.5rem;
+    font-size: 0.95rem;
+    border-radius: 10px;
+    transition: background 0.2s, box-shadow 0.2s, transform 0.15s, opacity 0.2s;
+}
+
+.btn-start:disabled {
+    background: #2a2d45;
+    color: #6b6f8a;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+    opacity: 1;
+}
+
+/* Pulse animation when ready */
+.btn-start-ready {
+    animation: pulse-green 1.8s ease-in-out infinite;
+}
+
+@keyframes pulse-green {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(3, 239, 98, 0.4); }
+    50%       { box-shadow: 0 0 0 8px rgba(3, 239, 98, 0); }
+}
+
+/* ---- Code arrangement correct-answer feedback ---- */
+.correct-code-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #f87171;
+    margin-bottom: 0.5rem;
+}
+
+.correct-code-list {
+    list-style: decimal;
+    padding-left: 1.4rem;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+}
+
+.correct-code-list li {
+    font-size: 0.82rem;
+    line-height: 1.5;
+}
+
+.correct-code-list code {
+    font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+    color: #c9d1d9;
+    background: rgba(0, 0, 0, 0.25);
+    padding: 0.15rem 0.4rem;
+    border-radius: 4px;
+}
+
+/* ============================================================
+   Flashcard Section
+   ============================================================ */
+
+.flashcard-section {
+    margin-top: 1rem;
+    padding-top: 2rem;
+    border-top: 1px solid #2a2d45;
+    animation: fadeInUp 0.4s ease 0.4s both;
+}
+
+.flashcard-section-sub {
+    font-size: 0.85rem;
+    color: #6b6f8a;
+    margin-bottom: 1.25rem;
+    line-height: 1.6;
+}
+
+/* ── Topic tabs ── */
+.fc-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-bottom: 1.25rem;
+}
+
+.fc-tab {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #a0a3b8;
+    background: #22253a;
+    border: 1px solid #2a2d45;
+    border-radius: 20px;
+    padding: 0.35rem 0.85rem;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.fc-tab:hover {
+    background: #2a2d45;
+    color: #e8eaf0;
+}
+
+.fc-tab.active {
+    background: rgba(3, 239, 98, 0.1);
+    border-color: rgba(3, 239, 98, 0.4);
+    color: #03ef62;
+}
+
+/* ── Flip card ── */
+.fc-deck {
+    perspective: 1000px;
+    margin-bottom: 1rem;
+}
+
+.fc-card {
+    width: 100%;
+    height: 200px;
+    cursor: pointer;
+    position: relative;
+}
+
+.fc-card-inner {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    transform-style: preserve-3d;
+    transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: 12px;
+}
+
+.fc-card.flipped .fc-card-inner {
+    transform: rotateY(180deg);
+}
+
+.fc-front,
+.fc-back {
+    position: absolute;
+    inset: 0;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    border-radius: 12px;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 0.6rem;
+}
+
+.fc-front {
+    background: #22253a;
+    border: 1px solid #2a2d45;
+}
+
+.fc-back {
+    background: rgba(3, 239, 98, 0.07);
+    border: 1px solid rgba(3, 239, 98, 0.3);
+    transform: rotateY(180deg);
+}
+
+.fc-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #6b6f8a;
+}
+
+.fc-back .fc-label {
+    color: rgba(3, 239, 98, 0.7);
+}
+
+.fc-text {
+    font-size: 0.92rem;
+    color: #e8eaf0;
+    line-height: 1.6;
+    font-weight: 500;
+}
+
+.fc-back .fc-text {
+    color: #e8eaf0;
+    font-family: 'JetBrains Mono', 'Courier New', monospace;
+    font-size: 0.85rem;
+}
+
+.fc-hint {
+    font-size: 0.72rem;
+    color: #6b6f8a;
+    margin-top: auto;
+}
+
+/* ── Navigation ── */
+.fc-nav {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+}
+
+.fc-counter {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #a0a3b8;
+    min-width: 50px;
+    text-align: center;
+}
+
+.fc-prev,
+.fc-next {
+    font-size: 0.8rem;
+    padding: 0.4rem 0.9rem;
+}

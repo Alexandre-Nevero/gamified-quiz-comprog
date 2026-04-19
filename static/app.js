@@ -106,84 +106,281 @@ document.addEventListener('DOMContentLoaded', () => {
 
 async function renderHome() {
     const app = document.getElementById('app');
+
+    const topics = [
+        { value: 'Arrays',                    icon: '[ ]', desc: 'Indexing, traversal & memory layout' },
+        { value: 'Multidimensional Arrays',    icon: '[ ][ ]', desc: '2D grids, matrices & nested loops' },
+        { value: 'Basic Sorting Algorithms',   icon: '↕',  desc: 'Bubble, selection & insertion sort' },
+        { value: 'Binary Search',              icon: '⌕',  desc: 'Divide & conquer search strategies' },
+        { value: 'Functions',                  icon: 'ƒ',  desc: 'Scope, recursion & function pointers' },
+        { value: 'Pointers',                   icon: '*',  desc: 'Memory addresses, dereferencing & malloc' },
+    ];
+
+    const difficulties = [
+        { value: 'Easy',   label: 'Easy',   color: 'diff-easy',   desc: 'Multiple Choice & True/False' },
+        { value: 'Medium', label: 'Medium', color: 'diff-medium', desc: 'Adds Fill-in-the-Blank' },
+        { value: 'Hard',   label: 'Hard',   color: 'diff-hard',   desc: 'Adds Code Arrangement' },
+    ];
+
     app.innerHTML = `
-        <div class="card">
-            <h2 class="card-title">CompProg 2 Quiz</h2>
-            <p class="welcome-msg">Welcome! Test your C programming knowledge.<br>Select a topic and difficulty, then start your quiz.</p>
+        <div class="home-hero">
+            <div class="home-hero-badge">10 questions · C Programming</div>
+            <h1 class="home-hero-title">Test Your C Knowledge</h1>
+            <p class="home-hero-sub">Pick a topic and difficulty to start a quiz session. Earn XP for every correct answer.</p>
+        </div>
 
-            <div class="form-group">
-                <label for="topic-select">Topic</label>
-                <select id="topic-select">
-                    <option value="Arrays">Arrays</option>
-                    <option value="Multidimensional Arrays">Multidimensional Arrays</option>
-                    <option value="Basic Sorting Algorithms">Basic Sorting Algorithms</option>
-                    <option value="Binary Search">Binary Search</option>
-                    <option value="Functions">Functions</option>
-                    <option value="Pointers">Pointers</option>
-                </select>
+        <div class="home-section">
+            <div class="home-section-label">Choose a Topic</div>
+            <div class="topic-grid">
+                ${topics.map(t => `
+                    <button class="topic-card" data-topic="${t.value}">
+                        <span class="topic-icon">${t.icon}</span>
+                        <span class="topic-name">${t.value}</span>
+                        <span class="topic-desc">${t.desc}</span>
+                    </button>
+                `).join('')}
             </div>
+        </div>
 
-            <div class="form-group">
-                <label for="difficulty-select">Difficulty</label>
-                <select id="difficulty-select">
-                    <option value="Easy">Easy</option>
-                    <option value="Medium">Medium</option>
-                    <option value="Hard">Hard</option>
-                </select>
+        <div class="home-section">
+            <div class="home-section-label">Choose Difficulty</div>
+            <div class="diff-pills">
+                ${difficulties.map(d => `
+                    <button class="diff-pill ${d.color}" data-difficulty="${d.value}">
+                        <span class="diff-label">${d.label}</span>
+                        <span class="diff-desc">${d.desc}</span>
+                    </button>
+                `).join('')}
             </div>
+        </div>
 
-            <div class="instructions">
-                <p>&gt; 10 questions per session</p>
-                <p>&gt; Easy: Multiple Choice &amp; True/False</p>
-                <p>&gt; Medium: + Fill-in-the-Blank</p>
-                <p>&gt; Hard: + Code Arrangement</p>
-            </div>
-
-            <button id="start-quiz-btn" class="btn-primary">Start Quiz</button>
+        <div class="home-start-row">
+            <button id="start-quiz-btn" class="btn-primary btn-start" disabled>
+                Select a topic &amp; difficulty to begin
+            </button>
             <div id="home-error" class="error-msg hidden"></div>
+        </div>
+
+        <!-- ── Flashcard Section ── -->
+        <div class="flashcard-section">
+            <div class="home-section-label" style="margin-top:2.5rem;">Quick Review — Flashcards</div>
+            <p class="flashcard-section-sub">Click a card to reveal the answer. Use these to warm up before your quiz.</p>
+
+            <!-- Topic tabs -->
+            <div class="fc-tabs" id="fc-tabs">
+                <button class="fc-tab active" data-topic="Arrays">Arrays</button>
+                <button class="fc-tab" data-topic="Multidimensional Arrays">Multi Arrays</button>
+                <button class="fc-tab" data-topic="Basic Sorting Algorithms">Sorting</button>
+                <button class="fc-tab" data-topic="Binary Search">Binary Search</button>
+                <button class="fc-tab" data-topic="Functions">Functions</button>
+                <button class="fc-tab" data-topic="Pointers">Pointers</button>
+            </div>
+
+            <!-- Card deck -->
+            <div class="fc-deck" id="fc-deck"></div>
+
+            <!-- Navigation -->
+            <div class="fc-nav">
+                <button class="btn-secondary fc-prev" id="fc-prev">← Prev</button>
+                <span class="fc-counter" id="fc-counter">1 / 5</span>
+                <button class="btn-secondary fc-next" id="fc-next">Next →</button>
+            </div>
         </div>
     `;
 
+    let selectedTopic = null;
+    let selectedDifficulty = null;
+
+    // ── Flashcard data ──
+    const flashcards = {
+        'Arrays': [
+            { q: 'What index does the first element of a C array have?', a: '0 — C arrays are zero-indexed.' },
+            { q: 'How do you declare an integer array of 5 elements?', a: 'int arr[5];' },
+            { q: 'What is the valid index range for int arr[10]?', a: '0 to 9 — accessing arr[10] is undefined behavior.' },
+            { q: 'How do you find the number of elements in a static array?', a: 'sizeof(arr) / sizeof(arr[0])' },
+            { q: 'What does the array name represent in C?', a: 'A pointer to the first element — arr == &arr[0].' },
+            { q: 'What happens when you access an out-of-bounds index?', a: 'Undefined behavior — C does not perform bounds checking.' },
+            { q: 'How do you initialize all elements of an array to 0?', a: 'int arr[10] = {0}; — remaining elements default to 0.' },
+        ],
+        'Multidimensional Arrays': [
+            { q: 'How do you declare a 3×4 integer matrix in C?', a: 'int matrix[3][4];' },
+            { q: 'How are 2D arrays stored in memory in C?', a: 'Row-major order — all elements of row 0, then row 1, etc.' },
+            { q: 'What is the linear index of element a[i][j] in int a[R][C]?', a: 'i * C + j' },
+            { q: 'What does a[1] refer to in int a[3][4]?', a: 'A pointer to the second row (4 integers starting at a[1][0]).' },
+            { q: 'How do you pass a 2D array to a function?', a: 'Specify the column count: void f(int a[][4]) or void f(int a[3][4]).' },
+            { q: 'Is a[i][j] equivalent to *(*(a+i)+j)?', a: 'Yes — both access the element at row i, column j.' },
+        ],
+        'Basic Sorting Algorithms': [
+            { q: 'What is the worst-case time complexity of Bubble Sort?', a: 'O(n²) — n-1 passes, each comparing adjacent pairs.' },
+            { q: 'Which sort finds the minimum and places it at the front each pass?', a: 'Selection Sort.' },
+            { q: 'Which sort is most efficient for nearly-sorted data?', a: 'Insertion Sort — best case O(n) when data is almost sorted.' },
+            { q: 'Is Bubble Sort stable?', a: 'Yes — equal elements maintain their relative order.' },
+            { q: 'How many swaps does Selection Sort make in the worst case?', a: 'n-1 swaps — one per pass.' },
+            { q: 'What optimization makes Bubble Sort adaptive?', a: 'Stop early if no swaps occur in a pass — indicates the array is sorted.' },
+            { q: 'What is the space complexity of Insertion Sort?', a: 'O(1) — it sorts in-place with no extra memory.' },
+        ],
+        'Binary Search': [
+            { q: 'What is the prerequisite for Binary Search?', a: 'The array must be sorted.' },
+            { q: 'What is the time complexity of Binary Search?', a: 'O(log n) — the search space halves each step.' },
+            { q: 'What is the safe formula to compute mid without overflow?', a: 'mid = low + (high - low) / 2' },
+            { q: 'What is the space complexity of iterative Binary Search?', a: 'O(1) — no extra memory needed.' },
+            { q: 'How many comparisons does Binary Search need for 1024 elements?', a: 'At most 10 — log₂(1024) = 10.' },
+            { q: 'What does lower bound Binary Search return?', a: 'The first index where the element is ≥ target.' },
+            { q: 'What is the space complexity of recursive Binary Search?', a: 'O(log n) — due to the call stack.' },
+        ],
+        'Functions': [
+            { q: 'What does a void function return?', a: 'Nothing — void means no return value.' },
+            { q: 'What is a function prototype?', a: 'A declaration of the function before its definition, telling the compiler its signature.' },
+            { q: 'How do you pass a variable by reference in C?', a: 'Pass a pointer to it: void f(int *x)' },
+            { q: 'What does the static keyword do on a local variable?', a: 'Preserves its value between function calls — initialized only once.' },
+            { q: 'What is the base case of a recursive factorial function?', a: 'n == 0 or n == 1, returning 1.' },
+            { q: 'Can a function return a pointer to a local variable?', a: 'No — local variables are destroyed when the function returns (dangling pointer).' },
+            { q: 'How do you declare a pointer to a function int f(int, int)?', a: 'int (*fp)(int, int);' },
+        ],
+        'Pointers': [
+            { q: 'What does a pointer store?', a: 'The memory address of another variable.' },
+            { q: 'What operator gives the address of a variable?', a: '& — the address-of operator.' },
+            { q: 'What operator dereferences a pointer?', a: '* — gives the value at the address the pointer holds.' },
+            { q: 'What is a NULL pointer?', a: 'A pointer that points to nothing — address 0. Always check before dereferencing.' },
+            { q: 'What does pointer arithmetic p+1 do for int *p?', a: 'Advances by sizeof(int) bytes — points to the next integer.' },
+            { q: 'What is a dangling pointer?', a: 'A pointer that points to freed or out-of-scope memory — dereferencing it is undefined behavior.' },
+            { q: 'What does malloc() return on failure?', a: 'NULL — always check the return value before using the pointer.' },
+        ],
+    };
+
+    // ── Flashcard state ──
+    let fcTopic = 'Arrays';
+    let fcIndex = 0;
+
+    function renderFlashcards() {
+        const cards = flashcards[fcTopic] || [];
+        const deck = document.getElementById('fc-deck');
+        const counter = document.getElementById('fc-counter');
+        if (!deck) return;
+
+        const card = cards[fcIndex];
+        deck.innerHTML = `
+            <div class="fc-card" id="fc-card">
+                <div class="fc-card-inner">
+                    <div class="fc-front">
+                        <span class="fc-label">Question</span>
+                        <p class="fc-text">${card.q}</p>
+                        <span class="fc-hint">Click to reveal answer</span>
+                    </div>
+                    <div class="fc-back">
+                        <span class="fc-label">Answer</span>
+                        <p class="fc-text">${card.a}</p>
+                    </div>
+                </div>
+            </div>
+        `;
+        counter.textContent = `${fcIndex + 1} / ${cards.length}`;
+
+        document.getElementById('fc-card').addEventListener('click', () => {
+            document.getElementById('fc-card').classList.toggle('flipped');
+        });
+    }
+
+    // Tab switching
+    document.querySelectorAll('.fc-tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+            document.querySelectorAll('.fc-tab').forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            fcTopic = tab.dataset.topic;
+            fcIndex = 0;
+            renderFlashcards();
+        });
+    });
+
+    // Prev / Next
+    document.getElementById('fc-prev').addEventListener('click', () => {
+        const cards = flashcards[fcTopic] || [];
+        fcIndex = (fcIndex - 1 + cards.length) % cards.length;
+        renderFlashcards();
+    });
+    document.getElementById('fc-next').addEventListener('click', () => {
+        const cards = flashcards[fcTopic] || [];
+        fcIndex = (fcIndex + 1) % cards.length;
+        renderFlashcards();
+    });
+
+    renderFlashcards();
+
+    function updateStartBtn() {
+        const btn = document.getElementById('start-quiz-btn');
+        if (selectedTopic && selectedDifficulty) {
+            btn.disabled = false;
+            btn.textContent = `Start ${selectedDifficulty} Quiz — ${selectedTopic}`;
+            btn.classList.add('btn-start-ready');
+        } else if (selectedTopic) {
+            btn.disabled = true;
+            btn.textContent = 'Now pick a difficulty';
+            btn.classList.remove('btn-start-ready');
+        } else if (selectedDifficulty) {
+            btn.disabled = true;
+            btn.textContent = 'Now pick a topic';
+            btn.classList.remove('btn-start-ready');
+        } else {
+            btn.disabled = true;
+            btn.textContent = 'Select a topic & difficulty to begin';
+            btn.classList.remove('btn-start-ready');
+        }
+    }
+
+    // Topic card selection
+    document.querySelectorAll('.topic-card').forEach(card => {
+        card.addEventListener('click', () => {
+            document.querySelectorAll('.topic-card').forEach(c => c.classList.remove('selected'));
+            card.classList.add('selected');
+            selectedTopic = card.dataset.topic;
+            updateStartBtn();
+        });
+    });
+
+    // Difficulty pill selection
+    document.querySelectorAll('.diff-pill').forEach(pill => {
+        pill.addEventListener('click', () => {
+            document.querySelectorAll('.diff-pill').forEach(p => p.classList.remove('selected'));
+            pill.classList.add('selected');
+            selectedDifficulty = pill.dataset.difficulty;
+            updateStartBtn();
+        });
+    });
+
+    // Start quiz
     document.getElementById('start-quiz-btn').addEventListener('click', async () => {
-        const topic = document.getElementById('topic-select').value;
-        const difficulty = document.getElementById('difficulty-select').value;
+        if (!selectedTopic || !selectedDifficulty) return;
+
         const errorEl = document.getElementById('home-error');
         const btn = document.getElementById('start-quiz-btn');
 
         errorEl.classList.add('hidden');
-        errorEl.textContent = '';
         btn.disabled = true;
         btn.textContent = 'Starting...';
 
         try {
             const headers = { 'Content-Type': 'application/json' };
             const token = getToken();
-            if (token) {
-                headers['Authorization'] = `Bearer ${token}`;
-            }
+            if (token) headers['Authorization'] = `Bearer ${token}`;
 
             const res = await fetch('/api/quiz/start', {
                 method: 'POST',
                 headers,
-                body: JSON.stringify({ topic, difficulty })
+                body: JSON.stringify({ topic: selectedTopic, difficulty: selectedDifficulty })
             });
 
             const data = await res.json();
-
-            if (!res.ok) {
-                throw new Error(data.detail || 'Failed to start quiz.');
-            }
+            if (!res.ok) throw new Error(data.detail || 'Failed to start quiz.');
 
             window.currentSessionId = data.session_id;
             window.currentQuestionIndex = 0;
-            window.currentDifficulty = difficulty;
-
+            window.currentDifficulty = selectedDifficulty;
             window.location.hash = '#quiz';
         } catch (err) {
             errorEl.textContent = err.message;
             errorEl.classList.remove('hidden');
             btn.disabled = false;
-            btn.textContent = 'Start Quiz';
+            btn.textContent = `Start ${selectedDifficulty} Quiz — ${selectedTopic}`;
         }
     });
 }
@@ -237,11 +434,14 @@ async function renderQuiz() {
 
     if (question.question_type === 'multiple_choice') {
         const choices = question.choices || [];
-        answersHTML = choices.map(choice => `
+        const visualLabels = ['A', 'B', 'C', 'D'];
+        answersHTML = choices.map((choice, idx) => {
+            const displayLabel = visualLabels[idx] || choice.label;
+            return `
             <button class="answer-btn" data-answer="${choice.label}">
-                <span class="choice-label">${choice.label}.</span> ${choice.text}
+                <span class="choice-label">${displayLabel}.</span> ${choice.text}
             </button>
-        `).join('');
+        `}).join('');
     } else if (question.question_type === 'true_false') {
         answersHTML = `
             <button class="answer-btn" data-answer="True">True</button>
@@ -375,10 +575,28 @@ async function renderQuiz() {
         const feedbackArea = document.getElementById('feedback-area');
 
         if (result.correct) {
-            feedbackArea.innerHTML = ' Correct!';
+            feedbackArea.innerHTML = '✓ Correct!';
             feedbackArea.className = 'feedback-area feedback-correct';
         } else {
-            feedbackArea.innerHTML = ` Incorrect. Correct answer: <span class="correct-answer-text">${result.correct_answer}</span>`;
+            // For code arrangement: correct_answer is a list of block IDs.
+            // Map them back to code content using the blocks rendered on the page.
+            let correctDisplay;
+            if (Array.isArray(result.correct_answer)) {
+                // Build an id→content map from the rendered code blocks
+                const blockMap = {};
+                document.querySelectorAll('#code-blocks-container [data-id]').forEach(el => {
+                    blockMap[parseInt(el.dataset.id)] = el.textContent.trim();
+                });
+                const orderedLines = result.correct_answer.map(id => blockMap[id] || `(block ${id})`);
+                correctDisplay = `
+                    <div class="correct-code-label">Correct order:</div>
+                    <ol class="correct-code-list">
+                        ${orderedLines.map(line => `<li><code>${line.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</code></li>`).join('')}
+                    </ol>`;
+            } else {
+                correctDisplay = `<span class="correct-answer-text">${result.correct_answer}</span>`;
+            }
+            feedbackArea.innerHTML = `✗ Incorrect. ${correctDisplay}`;
             feedbackArea.className = 'feedback-area feedback-incorrect';
         }
         feedbackArea.classList.remove('hidden');
@@ -769,11 +987,11 @@ async function renderProfile() {
     const level = data.level;
 
     const levelThresholds = [
-        { level: 1, start: 0,    next: 100  },
-        { level: 2, start: 100,  next: 250  },
-        { level: 3, start: 250,  next: 500  },
-        { level: 4, start: 500,  next: 1000 },
-        { level: 5, start: 1000, next: null },
+        { level: 1, start: 0,   next: 50  },
+        { level: 2, start: 50,  next: 120 },
+        { level: 3, start: 120, next: 250 },
+        { level: 4, start: 250, next: 500 },
+        { level: 5, start: 500, next: null },
     ];
 
     const threshold = levelThresholds.find(t => t.level === level) || levelThresholds[4];
