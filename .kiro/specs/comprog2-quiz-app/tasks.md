@@ -217,64 +217,64 @@ Tasks marked `*` are optional (property-based or unit tests) and can be skipped 
   - Verify `GET /api/users/me` without a token returns HTTP 401
   - Ensure all tests pass, ask the user if questions arise.
 
-- [-] 12. Build the frontend shell and routing
+- [x] 12. Build the frontend shell and routing
   - Create `static/index.html`: shell page with a `<div id="app">` mount point, link to `style.css` and `app.js`
   - Create `static/style.css`: apply retro theme — Press Start 2P font (Google Fonts), `#00ff41` on `#0d0d0d`, scanline `::before` pseudo-element with repeating linear gradient
   - Create `static/app.js`: implement a minimal JS router that reads `window.location.hash` (or `pathname`) and renders the correct view into `#app`
   - _Requirements: 9.1, 9.2, 10.1, 10.4_
 
-- [ ] 13. Build the Home, Login, and Register views
-  - [ ] 13.1 Implement the Home view in `static/app.js`
+- [x] 13. Build the Home, Login, and Register views
+  - [x] 13.1 Implement the Home view in `static/app.js`
     - Render topic dropdown (6 topics) and difficulty dropdown (Easy/Medium/Hard)
     - "Start Quiz" button calls `POST /api/quiz/start` and navigates to the Quiz view
     - _Requirements: 3.1, 3.2, 3.3, 3.4_
 
-  - [ ] 13.2 Implement the Login and Register views in `static/app.js`
+  - [x] 13.2 Implement the Login and Register views in `static/app.js`
     - Forms post to `/api/auth/login` and `/api/auth/register`
     - On success: store token in `localStorage`; read `guest_xp` from `localStorage`, pass it in the request body, then clear it
     - On failure: display error message from `detail` field
     - _Requirements: 1.1, 2.1, 5.11_
 
-- [ ] 14. Build the Quiz view
-  - [ ] 14.1 Implement question rendering for Multiple Choice and True/False
+- [x] 14. Build the Quiz view
+  - [x] 14.1 Implement question rendering for Multiple Choice and True/False
     - Fetch `GET /api/quiz/{session_id}/question/{n}`; render question text and answer options as buttons
     - On answer submit: call `POST /api/quiz/{session_id}/answer/{n}`; show correct/incorrect feedback and correct answer
     - Advance to next question or navigate to Summary when done
     - _Requirements: 4.2, 4.3, 4.6, 4.7_
 
-  - [ ] 14.2 Implement Fill-in-the-Blank rendering
+  - [x] 14.2 Implement Fill-in-the-Blank rendering
     - Render a text input; submit on Enter or button click
     - _Requirements: 4.4_
 
-  - [ ] 14.3 Implement Code Arrangement drag-and-drop rendering
+  - [x] 14.3 Implement Code Arrangement drag-and-drop rendering
     - Render shuffled code blocks as draggable `<div>` elements using the HTML5 native drag-and-drop API (`draggable`, `dragstart`, `dragover`, `drop` events)
     - On submit: collect block IDs in current visual order and post to answer endpoint
     - _Requirements: 4.5, 7.6, 9.3_
 
-- [ ] 15. Build the Summary, Profile, and Leaderboard views
-  - [ ] 15.1 Implement the Summary view
+- [x] 15. Build the Summary, Profile, and Leaderboard views
+  - [x] 15.1 Implement the Summary view
     - Fetch `GET /api/quiz/{session_id}/summary`; display correct count, total (10), and XP earned
     - For guests: add `xp_earned` to `localStorage` key `guest_xp` (accumulate, don't overwrite)
     - Show "Register" / "Login" prompt for guests; show "Play Again" and "Leaderboard" links for all
     - _Requirements: 4.8, 4.9, 5.9, 9.6_
 
-  - [ ] 15.2 Implement the Profile view
+  - [x] 15.2 Implement the Profile view
     - Fetch `GET /api/users/me` (requires token); display username, XP, and level badge
     - Display XP and level in the nav/header at all times when logged in
     - Show level-up notification if the answer response includes `level_up: true`
     - _Requirements: 5.6, 5.7, 5.8, 9.4, 9.5_
 
-  - [ ] 15.3 Implement the Leaderboard view
+  - [x] 15.3 Implement the Leaderboard view
     - Fetch `GET /api/leaderboard`; render a top-10 table with rank, username, XP, and level
     - Accessible without login
     - _Requirements: 6.1, 6.2, 6.3, 6.4_
 
-- [ ] 16. Wire everything together and validate deployment readiness
-  - [ ] 16.1 Register all routers in `app/main.py` with the `/api` prefix
+- [x] 16. Wire everything together and validate deployment readiness
+  - [x] 16.1 Register all routers in `app/main.py` with the `/api` prefix
     - Confirm catch-all route returns `index.html` for all non-`/api` paths
     - _Requirements: 10.1, 10.4_
 
-  - [ ] 16.2 Write a `Procfile` or `render.yaml` for Render deployment
+  - [x] 16.2 Write a `Procfile` or `render.yaml` for Render deployment
     - Start command: `uvicorn app.main:app --host 0.0.0.0 --port $PORT`
     - Document that `seed.py` must be run once after first deploy
     - _Requirements: 10.1, 10.2_
@@ -285,7 +285,7 @@ Tasks marked `*` are optional (property-based or unit tests) and can be skipped 
     - Test: seed script is idempotent (running twice does not duplicate questions)
     - _Requirements: 10.3, 10.4_
 
-- [ ] 17. Final checkpoint — Full stack complete
+- [x] 17. Final checkpoint — Full stack complete
   - Run `pytest --tb=short` — all tests must pass
   - Run the app locally with `uvicorn app.main:app --reload`, run `python seed.py`, and manually walk through a full guest quiz session and a registered user quiz session
   - Ensure all tests pass, ask the user if questions arise.

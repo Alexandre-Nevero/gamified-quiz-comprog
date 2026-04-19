@@ -288,6 +288,170 @@ tr:hover td {
     color: #ff4141;
 }
 
+/* ---- Quiz View ---- */
+.quiz-card {
+    max-width: 700px;
+}
+
+.progress-indicator {
+    font-size: 0.6rem;
+    color: #00ff41;
+    opacity: 0.7;
+    margin-bottom: 1rem;
+}
+
+.question-text {
+    font-size: 0.7rem;
+    line-height: 2;
+    margin-bottom: 1.5rem;
+    border-left: 2px solid #00ff41;
+    padding-left: 0.75rem;
+}
+
+.answers-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.answer-btn {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: 0.75rem 1rem;
+    font-size: 0.6rem;
+    line-height: 1.6;
+}
+
+.answer-btn .choice-label {
+    color: #00ff41;
+    text-shadow: 0 0 4px #00ff41;
+    margin-right: 0.5rem;
+}
+
+/* Feedback highlight states */
+.answer-btn.answer-correct {
+    background: #00ff41;
+    color: #0d0d0d;
+    border-color: #00ff41;
+    box-shadow: 0 0 12px #00ff41;
+}
+
+.answer-btn.answer-incorrect {
+    border-color: #ff4141;
+    color: #ff4141;
+    box-shadow: 0 0 8px #ff4141;
+}
+
+/* Feedback area */
+.feedback-area {
+    margin: 1rem 0;
+    padding: 0.75rem 1rem;
+    border: 1px solid #00ff41;
+    font-size: 0.6rem;
+    line-height: 1.8;
+}
+
+.feedback-correct {
+    border-color: #00ff41;
+    color: #00ff41;
+    text-shadow: 0 0 6px #00ff41;
+}
+
+.feedback-incorrect {
+    border-color: #ff4141;
+    color: #ff4141;
+}
+
+.feedback-error {
+    border-color: #ff4141;
+    color: #ff4141;
+}
+
+.correct-answer-text {
+    color: #00ff41;
+    text-shadow: 0 0 4px #00ff41;
+}
+
+/* Next / See Results button area */
+.next-btn-area {
+    margin-top: 1rem;
+}
+
+/* Fill-in-the-blank placeholder */
+.fill-blank-placeholder {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.fill-blank-input {
+    width: 100%;
+}
+
+/* Code arrangement placeholder */
+.code-arrangement-placeholder {
+    border: 1px dashed #00ff41;
+    padding: 1rem;
+    opacity: 0.6;
+}
+
+.placeholder-msg {
+    font-size: 0.6rem;
+}
+
+/* Primary button variant */
+.btn-primary {
+    display: inline-block;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 0.65rem;
+    color: #00ff41;
+    background: #0d0d0d;
+    border: 1px solid #00ff41;
+    padding: 0.6rem 1rem;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s, box-shadow 0.15s;
+    line-height: 1.4;
+}
+
+.btn-primary:hover {
+    background: #00ff41;
+    color: #0d0d0d;
+    box-shadow: 0 0 10px #00ff41;
+}
+
+.btn-primary:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.btn-primary:disabled:hover {
+    background: #0d0d0d;
+    color: #00ff41;
+    box-shadow: none;
+}
+
+/* Home view helpers */
+.welcome-msg {
+    font-size: 0.6rem;
+    line-height: 2;
+    margin-bottom: 1.5rem;
+}
+
+.instructions {
+    margin: 1rem 0 1.5rem;
+    font-size: 0.55rem;
+    opacity: 0.8;
+    line-height: 2;
+}
+
+.error-msg {
+    color: #ff4141;
+    font-size: 0.6rem;
+    margin-top: 0.75rem;
+}
+
 /* ---- Code Arrangement Drag-and-Drop ---- */
 .code-block {
     border: 1px solid #00ff41;
