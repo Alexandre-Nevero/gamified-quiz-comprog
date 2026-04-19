@@ -108,7 +108,7 @@ async function renderHome() {
     const app = document.getElementById('app');
     app.innerHTML = `
         <div class="card">
-            <h2 class="card-title">&gt; CompProg 2 Quiz</h2>
+            <h2 class="card-title">CompProg 2 Quiz</h2>
             <p class="welcome-msg">Welcome! Test your C programming knowledge.<br>Select a topic and difficulty, then start your quiz.</p>
 
             <div class="form-group">
@@ -139,7 +139,7 @@ async function renderHome() {
                 <p>&gt; Hard: + Code Arrangement</p>
             </div>
 
-            <button id="start-quiz-btn" class="btn-primary">[ START QUIZ ]</button>
+            <button id="start-quiz-btn" class="btn-primary">Start Quiz</button>
             <div id="home-error" class="error-msg hidden"></div>
         </div>
     `;
@@ -153,7 +153,7 @@ async function renderHome() {
         errorEl.classList.add('hidden');
         errorEl.textContent = '';
         btn.disabled = true;
-        btn.textContent = '[ LOADING... ]';
+        btn.textContent = 'Starting...';
 
         try {
             const headers = { 'Content-Type': 'application/json' };
@@ -183,7 +183,7 @@ async function renderHome() {
             errorEl.textContent = err.message;
             errorEl.classList.remove('hidden');
             btn.disabled = false;
-            btn.textContent = '[ START QUIZ ]';
+            btn.textContent = 'Start Quiz';
         }
     });
 }
@@ -203,7 +203,7 @@ async function renderQuiz() {
     // Show a loading state while fetching
     app.innerHTML = `
         <div class="card">
-            <p class="progress-indicator">&gt; Loading question ${n + 1} of 10...</p>
+            <p class="progress-indicator">Loading question ${n + 1} of 10...</p>
         </div>
     `;
 
@@ -225,8 +225,8 @@ async function renderQuiz() {
     } catch (err) {
         app.innerHTML = `
             <div class="card">
-                <p class="error-msg">&gt; Error: ${err.message}</p>
-                <button class="btn-primary" onclick="window.location.hash='#home'">[ HOME ]</button>
+                <p class="error-msg">Error: ${err.message}</p>
+                <button class="btn-primary" onclick="window.location.hash='#home'">Go Home</button>
             </div>
         `;
         return;
@@ -251,7 +251,7 @@ async function renderQuiz() {
         answersHTML = `
             <div class="fill-blank-container">
                 <input type="text" id="fill-blank-input" class="fill-blank-input" placeholder="Type your answer..." autofocus />
-                <button id="fill-blank-submit" class="btn-primary">[ SUBMIT ]</button>
+                <button id="fill-blank-submit" class="btn-primary">Submit Answer</button>
             </div>
         `;
     } else if (question.question_type === 'code_arrangement') {
@@ -263,14 +263,14 @@ async function renderQuiz() {
             <div id="code-blocks-container">
                 ${blocksHTML}
             </div>
-            <button id="code-submit-btn" class="btn-primary">[ SUBMIT ORDER ]</button>
+            <button id="code-submit-btn" class="btn-primary">Submit Order</button>
         `;
     }
 
     // ---- Render the full question card ----
     app.innerHTML = `
         <div class="card quiz-card">
-            <p class="progress-indicator">&gt; Question ${n + 1} of 10</p>
+            <p class="progress-indicator">Question ${n + 1} of 10</p>
             <p class="question-text">${question.question_text}</p>
             <div class="answers-container" id="answers-container">
                 ${answersHTML}
@@ -375,10 +375,10 @@ async function renderQuiz() {
         const feedbackArea = document.getElementById('feedback-area');
 
         if (result.correct) {
-            feedbackArea.innerHTML = '&gt; Correct!';
+            feedbackArea.innerHTML = ' Correct!';
             feedbackArea.className = 'feedback-area feedback-correct';
         } else {
-            feedbackArea.innerHTML = `&gt; Incorrect. Correct answer: <span class="correct-answer-text">${result.correct_answer}</span>`;
+            feedbackArea.innerHTML = ` Incorrect. Correct answer: <span class="correct-answer-text">${result.correct_answer}</span>`;
             feedbackArea.className = 'feedback-area feedback-incorrect';
         }
         feedbackArea.classList.remove('hidden');
@@ -395,13 +395,13 @@ async function renderQuiz() {
         const isLastQuestion = (n === 9);
 
         if (isLastQuestion) {
-            nextBtnArea.innerHTML = `<button id="see-results-btn" class="btn-primary">[ SEE RESULTS ]</button>`;
+            nextBtnArea.innerHTML = `<button id="see-results-btn" class="btn-primary">See Results</button>`;
             nextBtnArea.classList.remove('hidden');
             document.getElementById('see-results-btn').addEventListener('click', () => {
                 window.location.hash = '#summary';
             });
         } else {
-            nextBtnArea.innerHTML = `<button id="next-question-btn" class="btn-primary">[ NEXT QUESTION ]</button>`;
+            nextBtnArea.innerHTML = `<button id="next-question-btn" class="btn-primary">Next Question</button>`;
             nextBtnArea.classList.remove('hidden');
             document.getElementById('next-question-btn').addEventListener('click', () => {
                 window.currentQuestionIndex += 1;
@@ -454,7 +454,7 @@ async function renderSummary() {
     // Show loading state while fetching
     app.innerHTML = `
         <div class="card">
-            <p class="progress-indicator">&gt; Loading results...</p>
+            <p class="progress-indicator">Loading results...</p>
         </div>
     `;
 
@@ -476,8 +476,8 @@ async function renderSummary() {
     } catch (err) {
         app.innerHTML = `
             <div class="card">
-                <p class="error-msg">&gt; Error: ${err.message}</p>
-                <button class="btn-primary" onclick="window.location.hash='#home'">[ HOME ]</button>
+                <p class="error-msg">Error: ${err.message}</p>
+                <button class="btn-primary" onclick="window.location.hash='#home'">Go Home</button>
             </div>
         `;
         return;
@@ -498,25 +498,25 @@ async function renderSummary() {
         actionsHTML = `
             <div class="summary-actions">
                 <p class="summary-cta">&gt; Save your XP — create an account!</p>
-                <a href="#register" class="btn-primary">[ REGISTER ]</a>
-                <a href="#login" class="btn-secondary">[ LOGIN ]</a>
+                <a href="#register" class="btn-primary">Create Account</a>
+                <a href="#login" class="btn-secondary">Log In</a>
             </div>
         `;
     } else {
         // Logged-in: show Leaderboard link
         actionsHTML = `
             <div class="summary-actions">
-                <a href="#leaderboard" class="btn-secondary">[ LEADERBOARD ]</a>
+                <a href="#leaderboard" class="btn-secondary">Leaderboard</a>
             </div>
         `;
     }
 
     // Play Again is shown for all users
-    actionsHTML += `<a href="#home" class="btn-primary">[ PLAY AGAIN ]</a>`;
+    actionsHTML += `<a href="#home" class="btn-primary">Play Again</a>`;
 
     app.innerHTML = `
         <div class="card">
-            <h2 class="card-title">&gt; Quiz Complete!</h2>
+            <h2 class="card-title">Quiz Complete!</h2>
             <div class="summary-score">
                 <p class="score-line">${data.correct} / ${data.total} correct</p>
                 <p class="xp-line">XP earned: ${data.xp_earned}</p>
@@ -532,7 +532,7 @@ async function renderLeaderboard() {
     // Show loading state while fetching
     app.innerHTML = `
         <div class="card">
-            <p class="progress-indicator">&gt; Loading leaderboard...</p>
+            <p class="progress-indicator">Loading leaderboard...</p>
         </div>
     `;
 
@@ -547,8 +547,8 @@ async function renderLeaderboard() {
     } catch (err) {
         app.innerHTML = `
             <div class="card">
-                <p class="error-msg">&gt; Error: ${err.message}</p>
-                <a href="#home" class="btn-primary">[ HOME ]</a>
+                <p class="error-msg">Error: ${err.message}</p>
+                <a href="#home" class="btn-primary">Go Home</a>
             </div>
         `;
         return;
@@ -557,7 +557,7 @@ async function renderLeaderboard() {
     // Build table rows or empty state
     let tableHTML;
     if (data.length === 0) {
-        tableHTML = `<p class="welcome-msg">&gt; No players yet. Be the first!</p>`;
+        tableHTML = `<p class="welcome-msg">No players yet  be the first!</p>`;
     } else {
         const rows = data.map((entry, index) => `
             <tr>
@@ -587,10 +587,10 @@ async function renderLeaderboard() {
 
     app.innerHTML = `
         <div class="card">
-            <h2 class="card-title">&gt; Leaderboard</h2>
+            <h2 class="card-title">Leaderboard</h2>
             ${tableHTML}
             <div class="profile-actions">
-                <a href="#home" class="btn-primary">[ PLAY QUIZ ]</a>
+                <a href="#home" class="btn-primary">Play Quiz</a>
             </div>
         </div>
     `;
@@ -600,7 +600,7 @@ function renderLogin() {
     const app = document.getElementById('app');
     app.innerHTML = `
         <div class="card">
-            <h2 class="card-title">&gt; Login</h2>
+            <h2 class="card-title">Log In</h2>
             <form id="login-form">
                 <div class="form-group">
                     <label for="login-username">Username</label>
@@ -611,7 +611,7 @@ function renderLogin() {
                     <input type="password" id="login-password" autocomplete="current-password" required />
                 </div>
                 <div id="login-error" class="alert alert-error hidden"></div>
-                <button type="submit" id="login-btn" class="btn">[ LOGIN ]</button>
+                <button type="submit" id="login-btn" class="btn">Log In</button>
             </form>
         </div>
     `;
@@ -626,7 +626,7 @@ function renderLogin() {
         errorEl.classList.add('hidden');
         errorEl.textContent = '';
         btn.disabled = true;
-        btn.textContent = '[ LOGGING IN... ]';
+        btn.textContent = 'Logging in...';
 
         try {
             const guest_xp = getGuestXP();
@@ -649,7 +649,7 @@ function renderLogin() {
             errorEl.textContent = err.message;
             errorEl.classList.remove('hidden');
             btn.disabled = false;
-            btn.textContent = '[ LOGIN ]';
+            btn.textContent = 'Log In';
         }
     });
 }
@@ -658,7 +658,7 @@ function renderRegister() {
     const app = document.getElementById('app');
     app.innerHTML = `
         <div class="card">
-            <h2 class="card-title">&gt; Register</h2>
+            <h2 class="card-title">Create Account</h2>
             <form id="register-form">
                 <div class="form-group">
                     <label for="register-username">Username</label>
@@ -669,7 +669,7 @@ function renderRegister() {
                     <input type="password" id="register-password" autocomplete="new-password" required />
                 </div>
                 <div id="register-error" class="alert alert-error hidden"></div>
-                <button type="submit" id="register-btn" class="btn">[ REGISTER ]</button>
+                <button type="submit" id="register-btn" class="btn">Create Account</button>
             </form>
         </div>
     `;
@@ -684,7 +684,7 @@ function renderRegister() {
         errorEl.classList.add('hidden');
         errorEl.textContent = '';
         btn.disabled = true;
-        btn.textContent = '[ REGISTERING... ]';
+        btn.textContent = 'Creating account...';
 
         try {
             const guest_xp = getGuestXP();
@@ -721,7 +721,7 @@ function renderRegister() {
             errorEl.textContent = err.message;
             errorEl.classList.remove('hidden');
             btn.disabled = false;
-            btn.textContent = '[ REGISTER ]';
+            btn.textContent = 'Create Account';
         }
     });
 }
@@ -739,7 +739,7 @@ async function renderProfile() {
     // Show loading state while fetching
     app.innerHTML = `
         <div class="card">
-            <p class="progress-indicator">&gt; Loading profile...</p>
+            <p class="progress-indicator">Loading profile...</p>
         </div>
     `;
 
@@ -756,8 +756,8 @@ async function renderProfile() {
     } catch (err) {
         app.innerHTML = `
             <div class="card">
-                <p class="error-msg">&gt; Error: ${err.message}</p>
-                <a href="#home" class="btn-primary">[ HOME ]</a>
+                <p class="error-msg">Error: ${err.message}</p>
+                <a href="#home" class="btn-primary">Go Home</a>
             </div>
         `;
         return;
@@ -793,23 +793,23 @@ async function renderProfile() {
 
     app.innerHTML = `
         <div class="card">
-            <h2 class="card-title">&gt; Profile</h2>
+            <h2 class="card-title">Profile</h2>
 
             <div class="profile-info">
-                <p class="profile-username">&gt; ${data.username}</p>
+                <p class="profile-username">${data.username}</p>
                 <p class="profile-xp">Total XP: ${xp}</p>
                 <span class="level-badge">LVL ${level}</span>
             </div>
 
             <div class="profile-progress">
-                <p class="xp-progress-label">&gt; Progress to next level: ${progressLabel}</p>
+                <p class="xp-progress-label">Progress to next level: ${progressLabel}</p>
                 <div class="xp-bar-container">
                     <div class="xp-bar-fill" style="width: ${progressPercent}%;"></div>
                 </div>
             </div>
 
             <div class="profile-actions">
-                <a href="#home" class="btn-primary">[ PLAY QUIZ ]</a>
+                <a href="#home" class="btn-primary">Play Quiz</a>
             </div>
         </div>
     `;
