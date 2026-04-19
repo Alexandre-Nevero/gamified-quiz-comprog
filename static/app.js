@@ -124,8 +124,8 @@ async function renderHome() {
 
     app.innerHTML = `
         <div class="home-hero">
-            <div class="home-hero-badge">⌨️ BSCS 1-1N &nbsp;·&nbsp; Computer Programming 2 &nbsp;·&nbsp; Team Lapagan 2026</div>
-            <h1 class="home-hero-title">Master C.<br><span class="hero-title-accent">Crush the Quiz.</span></h1>
+            <div class="home-hero-badge">⌨️ BSCS 1-1N &nbsp;·&nbsp; Computer Programming 2 &nbsp;·&nbsp; Team Lapagan 2026🥵🥵</div>
+            <h1 class="home-hero-title">Master C.<br><span class="hero-title-accent">Crush the Midterms.</span></h1>
             <p class="home-hero-sub">10 questions. Real C concepts. Earn XP, climb the leaderboard, and prove you know your pointers from your arrays.</p>
         </div>
 
@@ -1108,78 +1108,158 @@ window.addEventListener('hashchange', route);
 document.addEventListener('DOMContentLoaded', route);
 
 // ============================================================
-// DIGITAL GLITCH TRANSITION
+// DIGITAL GLITCH TRANSITION — Hacker Arcade Edition
 // ============================================================
 
 function digitalGlitchTransition() {
     return new Promise((resolve) => {
-        const HEX_CHARS  = '0123456789ABCDEF';
-        const C_SYMBOLS  = ['{}', '*', '&', ';', '->', '[]', '//', '++', '!=', '0x', '#', '**', '<<', '>>'];
-        const container  = document.getElementById('app');
-        const main       = document.querySelector('main') || container;
 
-        // Collect all visible text nodes to scramble
-        const textTargets = [];
-        const walker = document.createTreeWalker(main, NodeFilter.SHOW_ELEMENT);
-        let node = walker.nextNode();
-        while (node) {
-            if (['P', 'H1', 'H2', 'H3', 'SPAN', 'BUTTON', 'LABEL', 'A'].includes(node.tagName)) {
-                if (node.childNodes.length === 1 && node.childNodes[0].nodeType === Node.TEXT_NODE) {
-                    textTargets.push({ el: node, original: node.textContent });
+        const HEX = '0123456789ABCDEF';
+        const main = document.querySelector('main') || document.getElementById('app');
+        const btn  = document.getElementById('start-quiz-btn');
+
+        const BOOT_LOGS = [
+            '> Initializing runtime environment...',
+            '> Allocating memory blocks...',
+            '> Loading stdlib headers...',
+            '> Compiling libraries... [OK]',
+            '> Linking object files...',
+            '> Resolving symbol table...',
+            '> Injecting quiz engine...',
+            '> Validating question bank...',
+            '> Mounting session context...',
+            '> Checking pointer integrity...',
+            '> Optimizing execution path...',
+            '> Build target: QUIZ.EXE',
+        ];
+
+        const KERNEL_ERRORS = [
+            'Segmentation fault (core dumped)',
+            'ERR: 0x' + Math.floor(Math.random()*0xFFFF).toString(16).toUpperCase().padStart(4,'0'),
+            'SIGSEGV — invalid memory reference',
+            'fatal: null pointer dereference',
+            'Bus error (core dumped)',
+        ];
+
+        function randHex(len) {
+            let s = '0x';
+            for (let i = 0; i < len; i++) s += HEX[Math.floor(Math.random()*16)];
+            return s;
+        }
+
+        function asciiBar(pct) {
+            const filled = Math.floor(pct / 5);
+            return '[' + '█'.repeat(filled) + '░'.repeat(20 - filled) + '] ' + pct + '%';
+        }
+
+        // ── PHASE 0: Fade to black + button prompt (0–300ms) ──
+        const blackout = document.createElement('div');
+        blackout.id = 'boot-blackout';
+        document.body.appendChild(blackout);
+        requestAnimationFrame(() => blackout.classList.add('active'));
+
+        if (btn) {
+            btn.innerHTML = 'EXEC \\MAIN.C <span class="exec-cursor">_</span>';
+            btn.disabled = true;
+        }
+
+        // ── PHASE 1: Boot sequence terminal (300–1500ms) ──
+        setTimeout(() => {
+            if (btn) btn.style.display = 'none';
+
+            const terminal = document.createElement('div');
+            terminal.id = 'boot-terminal';
+            terminal.innerHTML = `
+                <div class="boot-term-box">
+                    <div class="boot-term-title">// C-PROG ARENA — BOOT SEQUENCE v2.1</div>
+                    <div class="boot-log-area" id="boot-log-area"></div>
+                    <div class="boot-progress-bar" id="boot-progress-bar">${asciiBar(0)}</div>
+                </div>
+            `;
+            document.body.appendChild(terminal);
+
+            const logArea = document.getElementById('boot-log-area');
+            const progressBar = document.getElementById('boot-progress-bar');
+            let logIndex = 0;
+            let progress = 0;
+
+            const logInterval = setInterval(() => {
+                if (logIndex < BOOT_LOGS.length) {
+                    const line = document.createElement('div');
+                    line.className = 'boot-log-line';
+                    line.textContent = BOOT_LOGS[logIndex++];
+                    logArea.appendChild(line);
+                    logArea.scrollTop = logArea.scrollHeight;
                 }
-            }
-            node = walker.nextNode();
-        }
+                progress = Math.min(100, progress + Math.floor(Math.random() * 12) + 6);
+                progressBar.textContent = asciiBar(progress);
+            }, 95);
 
-        // Scramble function — replaces text with hex addresses + C symbols
-        function scramble(el) {
-            const len = Math.max(4, Math.min(el.original.length, 8));
-            if (Math.random() < 0.5) {
-                // Hex address style: 0xFA4B
-                let hex = '0x';
-                for (let i = 0; i < 4; i++) hex += HEX_CHARS[Math.floor(Math.random() * 16)];
-                el.el.textContent = hex;
-            } else {
-                // C symbol style
-                el.el.textContent = C_SYMBOLS[Math.floor(Math.random() * C_SYMBOLS.length)];
-            }
-        }
+            // ── PHASE 2: Glitch (1500–1700ms) ──
+            setTimeout(() => {
+                clearInterval(logInterval);
+                progressBar.textContent = asciiBar(100);
 
-        // ── PHASE 1: Jitter (0–100ms) ──
-        main.classList.add('glitch-jitter');
+                // Apply glitch classes
+                main.classList.add('glitch-tear', 'glitch-chroma');
 
-        // Start scrambling immediately
-        const scrambleIntervals = textTargets.map(t => {
-            return setInterval(() => scramble(t), 40);
-        });
+                // Kernel panic blocks
+                const panicBlocks = [];
+                for (let i = 0; i < 5; i++) {
+                    const b = document.createElement('div');
+                    b.className = 'kernel-panic-block';
+                    b.textContent = KERNEL_ERRORS[Math.floor(Math.random() * KERNEL_ERRORS.length)];
+                    b.style.left = (5 + Math.random() * 60) + '%';
+                    b.style.top  = (10 + Math.random() * 70) + '%';
+                    b.style.zIndex = '99995';
+                    document.body.appendChild(b);
+                    panicBlocks.push(b);
+                }
 
-        // ── PHASE 2: Tear + Chroma (100–400ms) ──
-        setTimeout(() => {
-            main.classList.remove('glitch-jitter');
-            main.classList.add('glitch-tear', 'glitch-chroma');
-        }, 100);
+                // ── PHASE 3: Resolution (1700–2200ms) ──
+                setTimeout(() => {
+                    // Clear glitch
+                    main.classList.remove('glitch-tear', 'glitch-chroma');
+                    panicBlocks.forEach(b => b.remove());
+                    terminal.remove();
 
-        // ── PHASE 3: Cleanup + Flash + Snap (400ms) ──
-        setTimeout(() => {
-            // Stop all scramble intervals and restore text
-            scrambleIntervals.forEach(id => clearInterval(id));
-            textTargets.forEach(t => { t.el.textContent = t.original; });
+                    // Resolution screen
+                    const resScreen = document.createElement('div');
+                    resScreen.id = 'boot-resolution';
+                    resScreen.innerHTML = `
+                        <div class="resolution-status">
+                            [ STATUS: SUCCESS ]<br>
+                            LOAD COMPLETE.
+                        </div>
+                        <div class="resolution-hex" id="res-hex">${randHex(8)}</div>
+                    `;
+                    document.body.appendChild(resScreen);
 
-            // Remove glitch classes
-            main.classList.remove('glitch-tear', 'glitch-chroma', 'glitch-jitter');
+                    // Hex counter
+                    const hexEl = document.getElementById('res-hex');
+                    const hexInterval = setInterval(() => {
+                        hexEl.textContent = randHex(8) + '  ' + randHex(4) + '  ' + randHex(6);
+                    }, 60);
 
-            // One-frame neon green flash (~16ms)
-            const flash = document.createElement('div');
-            flash.id = 'glitch-flash';
-            document.body.appendChild(flash);
+                    // ── PHASE 4: CRT snap (2200–2500ms) ──
+                    setTimeout(() => {
+                        clearInterval(hexInterval);
+                        resScreen.remove();
+                        blackout.remove();
 
-            requestAnimationFrame(() => {
-                requestAnimationFrame(() => {
-                    flash.remove();
-                    resolve(); // snap to quiz — no fade
-                });
-            });
-        }, 400);
+                        main.classList.add('crt-snap-full');
+                        main.addEventListener('animationend', () => {
+                            main.classList.remove('crt-snap-full');
+                            resolve();
+                        }, { once: true });
+
+                    }, 500); // 1700 + 500 = 2200ms
+
+                }, 200); // 1500 + 200 = 1700ms
+
+            }, 1200); // 300 + 1200 = 1500ms
+
+        }, 300);
     });
 }
 

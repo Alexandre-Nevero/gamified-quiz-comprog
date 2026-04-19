@@ -1659,3 +1659,184 @@ main,
     background: #03ef62;
     pointer-events: none;
 }
+
+/* ============================================================
+   UPGRADED GLITCH — Kernel Panic, CRT, CRT Snap
+   ============================================================ */
+
+/* Blinking underscore on button */
+@keyframes blinkCursor {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0; }
+}
+.btn-compile-cursor {
+    display: inline-block;
+    animation: blinkCursor 0.4s step-end infinite;
+    margin-left: 2px;
+}
+
+/* Kernel panic error blocks */
+.kernel-panic-block {
+    position: fixed;
+    z-index: 99990;
+    font-family: 'JetBrains Mono', 'Courier New', monospace;
+    font-size: 0.75rem;
+    color: #ff2222;
+    background: rgba(0, 0, 0, 0.85);
+    border: 1px solid #ff2222;
+    border-left: 3px solid #ff2222;
+    padding: 0.4rem 0.75rem;
+    pointer-events: none;
+    white-space: nowrap;
+    text-shadow: 0 0 6px #ff2222;
+    animation: panicFlicker 0.08s steps(1) infinite;
+}
+
+@keyframes panicFlicker {
+    0%   { opacity: 1; }
+    50%  { opacity: 0.7; }
+    100% { opacity: 1; }
+}
+
+/* CRT scanline overlay */
+#crt-scanlines {
+    position: fixed;
+    inset: 0;
+    z-index: 99991;
+    pointer-events: none;
+    background: repeating-linear-gradient(
+        to bottom,
+        transparent 0px,
+        transparent 3px,
+        rgba(0, 0, 0, 0.18) 3px,
+        rgba(0, 0, 0, 0.18) 4px
+    );
+    opacity: 0;
+    transition: opacity 0.08s ease;
+}
+#crt-scanlines.active { opacity: 1; }
+
+/* CRT snap finale — squash main down to a line */
+@keyframes crtSnap {
+    0%   { transform: scaleY(1);    background: transparent; }
+    60%  { transform: scaleY(0.02); background: #03ef62; box-shadow: 0 0 40px #03ef62; }
+    100% { transform: scaleY(1);    background: transparent; }
+}
+
+.crt-snap {
+    animation: crtSnap 0.22s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    transform-origin: center center;
+}
+
+/* ============================================================
+   BOOT SEQUENCE TRANSITION — 2.5s full timeline
+   ============================================================ */
+
+/* Fade-to-black overlay */
+#boot-blackout {
+    position: fixed; inset: 0; z-index: 99990;
+    background: #000; opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+}
+#boot-blackout.active { opacity: 1; pointer-events: all; }
+
+/* Blinking exec prompt on button */
+@keyframes execBlink {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0; }
+}
+.exec-cursor {
+    display: inline-block;
+    animation: execBlink 0.5s step-end infinite;
+}
+
+/* Terminal boot window */
+#boot-terminal {
+    position: fixed; inset: 0; z-index: 99992;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    pointer-events: none;
+}
+
+.boot-term-box {
+    width: min(640px, 90vw);
+    background: #000;
+    border: 1px solid #03ef62;
+    border-radius: 6px;
+    padding: 1.25rem 1.5rem;
+    font-family: 'JetBrains Mono', 'Courier New', monospace;
+    font-size: 0.78rem;
+    color: #03ef62;
+    box-shadow: 0 0 30px rgba(3,239,98,0.25);
+}
+
+.boot-term-title {
+    color: #03ef62;
+    font-size: 0.7rem;
+    margin-bottom: 0.75rem;
+    opacity: 0.6;
+    letter-spacing: 0.1em;
+}
+
+.boot-log-area {
+    min-height: 140px;
+    max-height: 140px;
+    overflow: hidden;
+    margin-bottom: 0.75rem;
+    line-height: 1.7;
+}
+
+.boot-log-line { color: #03ef62; }
+.boot-log-line.warn { color: #fbbf24; }
+.boot-log-line.err  { color: #f87171; }
+
+.boot-progress-bar {
+    font-size: 0.72rem;
+    color: #03ef62;
+    letter-spacing: 0.05em;
+}
+
+/* Resolution screen */
+#boot-resolution {
+    position: fixed; inset: 0; z-index: 99993;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    background: #000;
+    pointer-events: none;
+}
+
+.resolution-status {
+    font-family: 'JetBrains Mono', 'Courier New', monospace;
+    font-size: clamp(1rem, 3vw, 1.5rem);
+    font-weight: 700;
+    color: #03ef62;
+    text-align: center;
+    line-height: 1.8;
+    animation: statusPulse 0.8s ease-in-out infinite alternate;
+}
+
+@keyframes statusPulse {
+    from { text-shadow: 0 0 8px #03ef62, 0 0 20px #03ef62; }
+    to   { text-shadow: 0 0 20px #03ef62, 0 0 50px #03ef62, 0 0 80px rgba(3,239,98,0.4); }
+}
+
+.resolution-hex {
+    font-family: 'JetBrains Mono', 'Courier New', monospace;
+    font-size: 0.8rem;
+    color: rgba(3,239,98,0.5);
+    margin-top: 1rem;
+    letter-spacing: 0.15em;
+}
+
+/* CRT snap finale */
+@keyframes crtSnapFull {
+    0%   { transform: scaleY(1);     background: transparent; }
+    50%  { transform: scaleY(0.015); background: #03ef62;
+           box-shadow: 0 0 60px #03ef62, 0 0 120px rgba(3,239,98,0.6); }
+    100% { transform: scaleY(1);     background: transparent; }
+}
+.crt-snap-full {
+    animation: crtSnapFull 0.3s cubic-bezier(0.4,0,0.2,1) forwards;
+    transform-origin: center center;
+}
