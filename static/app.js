@@ -124,9 +124,9 @@ async function renderHome() {
 
     app.innerHTML = `
         <div class="home-hero">
-            <div class="home-hero-badge">10 questions · C Programming</div>
-            <h1 class="home-hero-title">Test Your C Knowledge</h1>
-            <p class="home-hero-sub">Pick a topic and difficulty to start a quiz session. Earn XP for every correct answer.</p>
+            <div class="home-hero-badge">⌨️ BSCS 1-1N &nbsp;·&nbsp; Computer Programming 2 &nbsp;·&nbsp; Team Lapagan 2026</div>
+            <h1 class="home-hero-title">Master C.<br><span class="hero-title-accent">Crush the Quiz.</span></h1>
+            <p class="home-hero-sub">10 questions. Real C concepts. Earn XP, climb the leaderboard, and prove you know your pointers from your arrays.</p>
         </div>
 
         <div class="home-section">
@@ -456,9 +456,10 @@ async function renderQuiz() {
         `;
     } else if (question.question_type === 'code_arrangement') {
         const blocks = question.code_blocks || [];
-        const blocksHTML = blocks.map(block => `
-            <div class="code-block" draggable="true" data-id="${block.id}">${block.content}</div>
-        `).join('');
+        const blocksHTML = blocks.map(block => {
+            const escaped = block.content.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            return `<div class="code-block" draggable="true" data-id="${block.id}" data-content="${block.content.replace(/"/g, '&quot;')}">${escaped}</div>`;
+        }).join('');
         answersHTML = `
             <div id="code-blocks-container">
                 ${blocksHTML}
@@ -585,14 +586,14 @@ async function renderQuiz() {
                 // Build an id→content map from the rendered code blocks
                 const blockMap = {};
                 document.querySelectorAll('#code-blocks-container [data-id]').forEach(el => {
-                    blockMap[parseInt(el.dataset.id)] = el.textContent.trim();
+                    blockMap[parseInt(el.dataset.id)] = el.dataset.content || el.textContent;
                 });
                 const orderedLines = result.correct_answer.map(id => blockMap[id] || `(block ${id})`);
                 correctDisplay = `
                     <div class="correct-code-label">Correct order:</div>
-                    <ol class="correct-code-list">
-                        ${orderedLines.map(line => `<li><code>${line.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</code></li>`).join('')}
-                    </ol>`;
+                    <div class="correct-code-list">
+                        ${orderedLines.map(line => `<div class="correct-code-line">${line.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</div>`).join('')}
+                    </div>`;
             } else {
                 correctDisplay = `<span class="correct-answer-text">${result.correct_answer}</span>`;
             }
@@ -772,17 +773,40 @@ async function renderLeaderboard() {
         return;
     }
 
+    const token = getToken();
+    const guestXP = getGuestXP();
+
+    // Guest banner — shown only when not logged in
+    const guestBanner = !token ? `
+        <div class="lb-guest-banner">
+            <div class="lb-guest-left">
+                <span class="lb-guest-icon">👤</span>
+                <div>
+                    <p class="lb-guest-title">You're playing as a guest</p>
+                    <p class="lb-guest-sub">${guestXP > 0
+                        ? `You've earned <strong>${guestXP} XP</strong> this session — register to save it and appear here.`
+                        : 'Complete a quiz to earn XP, then register to save it and appear on this board.'
+                    }</p>
+                </div>
+            </div>
+            <div class="lb-guest-actions">
+                <a href="#register" class="btn-primary">Register</a>
+                <a href="#login" class="btn-secondary">Log In</a>
+            </div>
+        </div>
+    ` : '';
+
     // Build table rows or empty state
     let tableHTML;
     if (data.length === 0) {
-        tableHTML = `<p class="welcome-msg">No players yet  be the first!</p>`;
+        tableHTML = `<p class="welcome-msg">No players yet — be the first!</p>`;
     } else {
         const rows = data.map((entry, index) => `
             <tr>
-                <td>${index + 1}</td>
+                <td class="lb-rank">${index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : index + 1}</td>
                 <td>${entry.username}</td>
-                <td>${entry.xp}</td>
-                <td>${entry.level}</td>
+                <td><span class="lb-xp">${entry.xp} XP</span></td>
+                <td><span class="level-badge">LVL ${entry.level}</span></td>
             </tr>
         `).join('');
 
@@ -791,7 +815,7 @@ async function renderLeaderboard() {
                 <thead>
                     <tr>
                         <th>Rank</th>
-                        <th>Username</th>
+                        <th>Player</th>
                         <th>XP</th>
                         <th>Level</th>
                     </tr>
@@ -806,8 +830,9 @@ async function renderLeaderboard() {
     app.innerHTML = `
         <div class="card">
             <h2 class="card-title">Leaderboard</h2>
+            ${guestBanner}
             ${tableHTML}
-            <div class="profile-actions">
+            <div class="profile-actions" style="margin-top:1.25rem;">
                 <a href="#home" class="btn-primary">Play Quiz</a>
             </div>
         </div>
@@ -1078,3 +1103,168 @@ function route() {
 
 window.addEventListener('hashchange', route);
 document.addEventListener('DOMContentLoaded', route);
+
+// ============================================================
+// EFFECTS — mouse spotlight, ripple, confetti, tilt,
+//           progress bar, streak, count-up, XP bump
+// ============================================================
+
+// ---- 1. Mouse spotlight ----
+(function () {
+    const spotlight = document.getElementById('spotlight');
+    if (!spotlight) return;
+    document.addEventListener('mousemove', (e) => {
+        spotlight.style.left = e.clientX + 'px';
+        spotlight.style.top  = e.clientY + 'px';
+    });
+})();
+
+// ---- 2. Page view fade — re-trigger animation on every route change ----
+window.addEventListener('hashchange', () => {
+    const app = document.getElementById('app');
+    if (!app) return;
+    app.style.animation = 'none';
+    app.offsetHeight;
+    app.style.animation = '';
+});
+
+// ---- 3. Answer button ripple ----
+document.addEventListener('click', (e) => {
+    const btn = e.target.closest('.answer-btn');
+    if (!btn) return;
+    const ripple = document.createElement('span');
+    ripple.className = 'ripple';
+    const rect = btn.getBoundingClientRect();
+    const size = Math.max(rect.width, rect.height);
+    ripple.style.cssText = `width:${size}px;height:${size}px;left:${e.clientX - rect.left - size / 2}px;top:${e.clientY - rect.top - size / 2}px`;
+    btn.appendChild(ripple);
+    ripple.addEventListener('animationend', () => ripple.remove());
+});
+
+// ---- 4. Confetti burst ----
+function spawnConfetti(x, y) {
+    const colors = ['#03ef62', '#6366f1', '#fbbf24', '#f87171', '#0ea5e9', '#a78bfa'];
+    for (let i = 0; i < 22; i++) {
+        const p = document.createElement('div');
+        p.className = 'confetti-particle';
+        p.style.cssText = `
+            left:${x + (Math.random() - 0.5) * 80}px;
+            top:${y}px;
+            background:${colors[Math.floor(Math.random() * colors.length)]};
+            transform:rotate(${Math.random() * 360}deg);
+            animation-duration:${0.7 + Math.random() * 0.6}s;
+            animation-delay:${Math.random() * 0.15}s;
+        `;
+        document.body.appendChild(p);
+        p.addEventListener('animationend', () => p.remove());
+    }
+}
+
+// ---- 5. 3D card tilt ----
+document.addEventListener('mousemove', (e) => {
+    const card = e.target.closest('.topic-card');
+    if (!card) return;
+    const rect = card.getBoundingClientRect();
+    const dx = (e.clientX - (rect.left + rect.width  / 2)) / (rect.width  / 2);
+    const dy = (e.clientY - (rect.top  + rect.height / 2)) / (rect.height / 2);
+    card.style.transform = `perspective(600px) rotateY(${dx * 8}deg) rotateX(${-dy * 8}deg) translateY(-2px)`;
+});
+
+document.addEventListener('mouseleave', (e) => {
+    const card = e.target.closest('.topic-card');
+    if (card) card.style.transform = '';
+}, true);
+
+// ---- 6. XP nav bump animation ----
+let _lastNavXP = null;
+const _navXpEl = () => document.getElementById('nav-xp');
+
+function checkXPBump() {
+    const el = _navXpEl();
+    if (!el || el.classList.contains('hidden')) return;
+    const match = el.textContent.match(/XP:\s*(\d+)/);
+    if (!match) return;
+    const newXP = parseInt(match[1]);
+    if (_lastNavXP !== null && newXP > _lastNavXP) {
+        el.classList.remove('xp-bump');
+        el.offsetHeight;
+        el.classList.add('xp-bump');
+        el.addEventListener('animationend', () => el.classList.remove('xp-bump'), { once: true });
+    }
+    _lastNavXP = newXP;
+}
+
+// Poll nav XP every 2s to catch updates
+setInterval(checkXPBump, 2000);
+
+// ---- 7. Summary count-up ----
+function animateCount(el, from, to, format, duration) {
+    const start = performance.now();
+    function step(now) {
+        const p = Math.min((now - start) / duration, 1);
+        const ease = 1 - Math.pow(1 - p, 3);
+        el.textContent = format(Math.round(from + (to - from) * ease));
+        if (p < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+}
+
+// ---- 8. MutationObserver to wire up quiz effects after DOM updates ----
+let _quizStreak = 0;
+
+const _appObserver = new MutationObserver(() => {
+    // Progress bar
+    const card = document.querySelector('.quiz-card');
+    if (card && !card.querySelector('.quiz-progress-bar-wrap')) {
+        const n = window.currentQuestionIndex || 0;
+        const bar = document.createElement('div');
+        bar.className = 'quiz-progress-bar-wrap';
+        bar.innerHTML = `<div class="quiz-progress-bar-fill" style="width:${n * 10}%"></div>`;
+        card.insertBefore(bar, card.firstChild);
+    }
+
+    // Streak badge
+    if (card && _quizStreak >= 2 && !card.querySelector('.streak-badge')) {
+        const badge = document.createElement('div');
+        badge.className = 'streak-badge';
+        badge.textContent = `🔥 ${_quizStreak} in a row!`;
+        const prog = card.querySelector('.progress-indicator');
+        if (prog) prog.after(badge);
+    }
+
+    // Summary count-up
+    const scoreLine = document.querySelector('.score-line');
+    const xpLine    = document.querySelector('.xp-line');
+    if (scoreLine && !scoreLine.dataset.animated) {
+        scoreLine.dataset.animated = '1';
+        const m = scoreLine.textContent.match(/(\d+)\s*\/\s*(\d+)/);
+        if (m) animateCount(scoreLine, 0, parseInt(m[1]), (v) => `${v} / ${m[2]} correct`, 900);
+    }
+    if (xpLine && !xpLine.dataset.animated) {
+        xpLine.dataset.animated = '1';
+        const m = xpLine.textContent.match(/(\d+)/);
+        if (m) animateCount(xpLine, 0, parseInt(m[1]), (v) => `XP earned: ${v}`, 1100);
+    }
+
+    // Feedback observer for confetti + streak
+    const fb = document.getElementById('feedback-area');
+    if (fb && !fb.dataset.observed) {
+        fb.dataset.observed = '1';
+        const fbObs = new MutationObserver(() => {
+            if (fb.classList.contains('hidden')) return;
+            if (fb.classList.contains('feedback-correct')) {
+                _quizStreak++;
+                const rect = fb.getBoundingClientRect();
+                spawnConfetti(rect.left + rect.width / 2, rect.top + 20);
+            } else if (fb.classList.contains('feedback-incorrect')) {
+                _quizStreak = 0;
+            }
+        });
+        fbObs.observe(fb, { attributes: true, attributeFilter: ['class'] });
+    }
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+    const appEl = document.getElementById('app');
+    if (appEl) _appObserver.observe(appEl, { childList: true, subtree: true });
+});
